@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регионы России — Новостной мониторинг</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & TOKENS ──────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080d18;
+  --bg2:#0f1624;
+  --bg3:#161f30;
+  --bg4:#1c2840;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --border3:rgba(255,255,255,0.22);
+  --accent:#2563eb;
+  --accent-l:#3b82f6;
+  --accent-xl:#60a5fa;
+  --accent-dim:rgba(37,99,235,0.15);
+  --green:#059669;
+  --green-l:#10b981;
+  --green-dim:rgba(5,150,105,0.12);
+  --amber:#d97706;
+  --amber-l:#f59e0b;
+  --amber-dim:rgba(217,119,6,0.12);
+  --red:#dc2626;
+  --red-l:#ef4444;
+  --tg:#0088cc;
+  --tg-l:#2ea6ff;
+  --tg-dim:rgba(0,136,204,0.12);
+  --text:#e8edf5;
+  --muted:#7a8ba8;
+  --muted2:#4a5568;
+  --r:10px;
+  --r-sm:6px;
+}
+html{font-size:14px}
+body{font-family:'Golos Text',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ─── NOISE OVERLAY ───────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4;pointer-events:none;z-index:0
+}
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+header{
+  position:relative;z-index:100;
+  display:flex;align-items:center;gap:20px;
+  padding:0 20px;height:52px;
+  background:rgba(8,13,24,0.95);
+  border-bottom:1px solid var(--border2);
+  backdrop-filter:blur(20px);
+  flex-shrink:0;
+}
+.logo{
+  font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:-.3px;white-space:nowrap;
+  display:flex;align-items:center;gap:8px
+}
+.logo-flag{font-size:18px}
+.logo-dot{color:var(--accent-l);margin:0 2px}
+
+/* GLOBAL SEARCH */
+.global-search{
+  flex:1;max-width:480px;position:relative
+}
+.global-search input{
+  width:100%;height:34px;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:var(--r-sm);
+  padding:0 12px 0 36px;
+  color:var(--text);font-family:inherit;font-size:13px;
+  outline:none;transition:border-color .2s,box-shadow .2s
+}
+.global-search input:focus{
+  border-color:var(--accent-l);
+  box-shadow:0 0 0 3px rgba(59,130,246,0.12)
+}
+.global-search input::placeholder{color:var(--muted2)}
+.search-ico{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:15px;pointer-events:none;line-height:1
+}
+.search-clear{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  color:var(--muted2);cursor:pointer;font-size:16px;
+  display:none;line-height:1;transition:color .15s
+}
+.search-clear:hover{color:var(--text)}
+
+/* SEARCH TAGS */
+.search-tags{
+  display:flex;align-items:center;gap:6px;flex-shrink:0
+}
+.stag{
+  padding:3px 10px;border-radius:20px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--muted);
+  font-size:11px;cursor:pointer;
+  font-family:inherit;transition:all .15s
+}
+.stag:hover{border-color:var(--accent-l);color:var(--accent-xl)}
+.stag.active{background:var(--accent-dim);border-color:var(--accent-l);color:var(--accent-xl)}
+
+/* HEADER RIGHT */
+.header-right{
+  margin-left:auto;display:flex;align-items:center;gap:12px
+}
+.live-pill{
+  display:flex;align-items:center;gap:5px;
+  background:var(--green-dim);
+  border:1px solid rgba(16,185,129,.25);
+  color:var(--green-l);
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500
+}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--green-l);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+#hclock{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ─── SEARCH RESULTS BAR ─────────────────────────────────── */
+#search-bar{
+  display:none;
+  background:var(--bg2);border-bottom:1px solid var(--border2);
+  padding:6px 20px;
+  align-items:center;gap:10px;
+  font-size:12px;color:var(--muted);
+  flex-shrink:0;z-index:90;position:relative
+}
+#search-bar.visible{display:flex}
+.sq-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--accent-dim);border:1px solid rgba(59,130,246,.3);
+  color:var(--accent-xl);padding:2px 8px;border-radius:4px;font-weight:500
+}
+#search-stats{margin-left:auto;color:var(--muted2)}
+
+/* ─── MAIN LAYOUT ───────────────────────────────────────── */
+.main{
+  flex:1;overflow:hidden;
+  display:grid;
+  grid-template-columns:270px 1fr 300px;
+  position:relative;z-index:1
+}
+
+/* ─── SCROLLBARS ────────────────────────────────────────── */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+
+/* ─── LEFT PANEL ─────────────────────────────────────────── */
+.left-panel{
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.lp-tabs{
+  display:flex;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.lp-tab{
+  flex:1;padding:10px 0;text-align:center;
+  font-size:11px;font-weight:500;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .15s;letter-spacing:.3px
+}
+.lp-tab.active{color:var(--accent-xl);border-bottom-color:var(--accent-l)}
+.lp-tab:hover:not(.active){color:var(--text)}
+
+.lp-body{flex:1;overflow-y:auto;padding:10px}
+
+/* REGION SEARCH */
+.reg-search{position:relative;margin-bottom:10px}
+.reg-search input{
+  width:100%;height:30px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:0 10px 0 30px;
+  color:var(--text);font-family:inherit;font-size:12px;outline:none;
+  transition:border-color .2s
+}
+.reg-search input:focus{border-color:var(--accent-l)}
+.reg-search input::placeholder{color:var(--muted2)}
+.reg-search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:13px;pointer-events:none}
+
+/* DISTRICT */
+.district-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 9px;border-radius:var(--r-sm);
+  cursor:pointer;transition:background .15s;
+  margin-bottom:2px
+}
+.district-btn:hover{background:var(--bg4)}
+.district-btn.active{background:var(--accent-dim);border:1px solid rgba(59,130,246,.2)}
+.d-swatch{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.d-name{font-size:12px;flex:1}
+.d-count{font-size:10px;color:var(--muted2);background:var(--bg4);padding:1px 6px;border-radius:10px}
+
+/* REGION ITEM */
+.region-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 9px;border-radius:var(--r-sm);
+  cursor:pointer;transition:background .15s;
+  font-size:12px;
+}
+.region-btn:hover{background:var(--bg3)}
+.region-btn.active{background:rgba(59,130,246,.12);color:var(--accent-xl)}
+.rb-dot{width:5px;height:5px;border-radius:50%;background:var(--muted2);flex-shrink:0}
+.region-btn.active .rb-dot{background:var(--accent-l)}
+.rb-name{flex:1;line-height:1.3}
+.rb-news{font-size:10px;color:var(--muted2)}
+.rb-news.has-news{color:var(--accent-xl)}
+
+/* ─── CENTER PANEL ───────────────────────────────────────── */
+.center{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+/* MAP */
+.map-wrap{
+  flex-shrink:0;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  position:relative;
+  height:300px;overflow:hidden
+}
+#map-svg{width:100%;height:100%;display:block}
+.map-region{
+  fill:#12213a;stroke:#1e3050;stroke-width:.4;
+  cursor:pointer;transition:fill .18s,stroke .18s
+}
+.map-region:hover{fill:#1e3a5f;stroke:#2d5a8f}
+.map-region.mr-active{fill:#1d4ed8;stroke:#60a5fa;stroke-width:.8}
+.map-region.mr-hasnews{fill:#16305a}
+.map-region.mr-highlight{fill:#1e3d7a;stroke:#3b7de0;stroke-width:.6}
+
+.map-controls{
+  position:absolute;top:10px;left:10px;
+  display:flex;gap:6px;flex-wrap:wrap
+}
+.mc-btn{
+  background:rgba(8,13,24,.85);
+  border:1px solid var(--border2);
+  color:var(--muted);font-size:10px;
+  padding:4px 9px;border-radius:20px;
+  cursor:pointer;backdrop-filter:blur(8px);
+  transition:all .15s;font-family:inherit
+}
+.mc-btn:hover,.mc-btn.active{background:rgba(37,99,235,.2);border-color:var(--accent-l);color:var(--accent-xl)}
+
+.map-legend{
+  position:absolute;bottom:10px;right:10px;
+  background:rgba(8,13,24,.88);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:8px 10px;font-size:10px;
+  backdrop-filter:blur(10px);
+}
+.ml-row{display:flex;align-items:center;gap:6px;color:var(--muted);margin-bottom:4px}
+.ml-row:last-child{margin-bottom:0}
+.ml-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+#mtooltip{
+  position:absolute;
+  background:rgba(8,13,24,.95);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:7px 11px;
+  font-size:11px;pointer-events:none;display:none;z-index:50;
+  backdrop-filter:blur(12px);max-width:220px;line-height:1.5
+}
+#mtt-name{font-weight:600;margin-bottom:2px;color:var(--text)}
+#mtt-district{color:var(--muted);font-size:10px;margin-bottom:4px}
+#mtt-sources{color:var(--muted);font-size:10px}
+
+/* NEWS AREA */
+.news-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.news-toolbar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  flex-shrink:0
+}
+.news-title{
+  font-family:'Unbounded',sans-serif;
+  font-size:12px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:220px
+}
+.news-filters{display:flex;gap:5px;margin-left:auto;flex-shrink:0}
+.nf-btn{
+  padding:3px 9px;border-radius:20px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10px;cursor:pointer;
+  font-family:inherit;transition:all .15s
+}
+.nf-btn:hover{border-color:var(--border3);color:var(--text)}
+.nf-btn.active{background:var(--accent-dim);border-color:var(--accent-l);color:var(--accent-xl)}
+
+#news-list{flex:1;overflow-y:auto;padding:12px 14px}
+
+/* NEWS CARD */
+.ncard{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 14px;margin-bottom:9px;
+  cursor:pointer;transition:border-color .15s,transform .15s;
+  position:relative;overflow:hidden
+}
+.ncard::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;
+  background:var(--accent-l);opacity:0;transition:opacity .15s
+}
+.ncard.type-tg::before{background:var(--tg-l)}
+.ncard.type-gov::before{background:var(--green-l)}
+.ncard.type-rss::before{background:var(--amber-l)}
+.ncard:hover{border-color:var(--border2);transform:translateX(3px)}
+.ncard:hover::before,.ncard.search-match::before{opacity:1}
+.ncard.search-match{border-color:rgba(59,130,246,.3);background:rgba(37,99,235,.05)}
+.ncard.search-hidden{display:none}
+
+.nc-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.nc-badge{
+  font-size:9px;padding:2px 7px;border-radius:3px;font-weight:500;
+  white-space:nowrap
+}
+.nb-news{background:rgba(59,130,246,.15);color:#93c5fd}
+.nb-tg{background:var(--tg-dim);color:#7dd3fc}
+.nb-gov{background:var(--green-dim);color:#6ee7b7}
+.nb-rss{background:var(--amber-dim);color:#fcd34d}
+.nc-source{font-size:10px;color:var(--muted)}
+.nc-region{
+  font-size:9px;padding:1px 6px;border-radius:3px;
+  background:rgba(255,255,255,.05);color:var(--muted2)
+}
+.nc-time{margin-left:auto;font-size:10px;color:var(--muted2);white-space:nowrap}
+.nc-title{font-size:13px;font-weight:500;line-height:1.5;margin-bottom:5px}
+.nc-title mark{
+  background:rgba(251,191,36,.25);color:#fde68a;
+  border-radius:2px;padding:0 2px
+}
+.nc-summary{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px}
+.nc-summary mark{
+  background:rgba(251,191,36,.15);color:#fcd34d;
+  border-radius:2px;padding:0 2px
+}
+.nc-rss-url{
+  font-size:10px;color:var(--muted2);
+  display:flex;align-items:center;gap:4px;margin-top:4px
+}
+.nc-rss-url a{color:var(--accent-xl);text-decoration:none}
+.nc-rss-url a:hover{text-decoration:underline}
+
+.empty-feed{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:200px;color:var(--muted);font-size:12px;gap:8px
+}
+.empty-icon{font-size:36px}
+
+/* ─── RIGHT PANEL ────────────────────────────────────────── */
+.right-panel{
+  background:var(--bg2);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.rp-header{
+  padding:12px 14px 10px;border-bottom:1px solid var(--border);
+  flex-shrink:0
+}
+.rp-title{
+  font-family:'Unbounded',sans-serif;
+  font-size:10px;font-weight:600;letter-spacing:1px;
+  color:var(--muted2);text-transform:uppercase;margin-bottom:10px
+}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.stat-b{
+  background:var(--bg3);border-radius:var(--r-sm);
+  padding:8px 10px
+}
+.stat-l{font-size:9px;color:var(--muted2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.stat-v{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:600}
+.stat-s{font-size:9px;color:var(--muted2);margin-top:2px}
+.stat-v.c-green{color:var(--green-l)}
+.stat-v.c-blue{color:var(--accent-xl)}
+.stat-v.c-amber{color:var(--amber-l)}
+
+/* RSS ACCORDION */
+.rp-body{flex:1;overflow-y:auto}
+.rss-group{border-bottom:1px solid var(--border)}
+.rss-group-head{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;cursor:pointer;
+  font-size:11px;font-weight:500;
+  transition:background .15s;user-select:none
+}
+.rss-group-head:hover{background:var(--bg3)}
+.rgh-icon{font-size:13px}
+.rgh-name{flex:1}
+.rgh-count{
+  font-size:9px;background:var(--bg4);
+  padding:1px 6px;border-radius:10px;color:var(--muted)
+}
+.rgh-arrow{color:var(--muted2);font-size:11px;transition:transform .2s}
+.rss-group.open .rgh-arrow{transform:rotate(90deg)}
+.rss-group-body{display:none;padding:0 8px 8px}
+.rss-group.open .rss-group-body{display:block}
+
+.rss-entry{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:var(--r-sm);
+  font-size:11px;cursor:pointer;
+  transition:background .15s;
+}
+.rss-entry:hover{background:var(--bg4)}
+.re-icon{
+  width:20px;height:20px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;flex-shrink:0
+}
+.rei-news{background:rgba(59,130,246,.2)}
+.rei-tg{background:var(--tg-dim)}
+.rei-gov{background:var(--green-dim)}
+.re-info{flex:1;min-width:0}
+.re-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.re-sub{font-size:9px;color:var(--muted2);margin-top:1px}
+.re-toggle{
+  width:26px;height:15px;border-radius:8px;
+  border:1px solid var(--border2);background:var(--bg4);
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0
+}
+.re-toggle.on{background:var(--accent);border-color:var(--accent-l)}
+.re-toggle::after{
+  content:'';position:absolute;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--muted);top:2px;left:2px;
+  transition:all .2s
+}
+.re-toggle.on::after{left:13px;background:#fff}
+
+/* TG LIVE FEED */
+.tg-live-wrap{
+  border-top:1px solid var(--border);
+  flex-shrink:0
+}
+.tgl-head{
+  padding:10px 14px 8px;
+  font-size:10px;font-weight:500;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;gap:6px
+}
+.tgl-items{max-height:200px;overflow-y:auto}
+.tgl-item{
+  padding:8px 14px;border-top:1px solid var(--border);
+  font-size:11px;cursor:pointer;transition:background .15s
+}
+.tgl-item:hover{background:var(--bg3)}
+.tgl-ch{color:var(--tg-l);font-size:10px;font-weight:500;margin-bottom:3px}
+.tgl-text{color:var(--text);line-height:1.5;margin-bottom:3px}
+.tgl-meta{color:var(--muted2);font-size:9px}
+
+/* ─── SECTION LABEL ──────────────────────────────────────── */
+.sec-label{
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted2);padding:8px 9px 4px;font-weight:600
+}
+
+/* ─── PANEL TABS (right) ─────────────────────────────────── */
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.rp-tab{
+  flex:1;padding:9px 0;text-align:center;
+  font-size:10px;font-weight:500;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all .15s
+}
+.rp-tab.active{color:var(--accent-xl);border-bottom-color:var(--accent-l)}
+.rp-tab:hover:not(.active){color:var(--text)}
+
+.rp-pane{display:none}
+.rp-pane.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <div class="logo">
+    <span class="logo-flag">🇷🇺</span>
+    Регионы<span class="logo-dot">·</span>РФ
+  </div>
+
+  <div class="global-search">
+    <span class="search-ico">⌕</span>
+    <input id="gsearch" type="text" placeholder="Поиск по новостям, регионам, источникам…"
+           oninput="onGlobalSearch(this.value)" onkeydown="onSearchKey(event)">
+    <span class="search-clear" id="sclear" onclick="clearSearch()">✕</span>
+  </div>
+
+  <div class="search-tags" id="search-tags">
+    <button class="stag" onclick="quickSearch('бюджет')">бюджет</button>
+    <button class="stag" onclick="quickSearch('инфраструктура')">инфраструктура</button>
+    <button class="stag" onclick="quickSearch('экология')">экология</button>
+    <button class="stag" onclick="quickSearch('ЖКХ')">ЖКХ</button>
+    <button class="stag" onclick="quickSearch('инвестиции')">инвестиции</button>
+  </div>
+
+  <div class="header-right">
+    <div class="live-pill"><div class="ldot"></div>Онлайн</div>
+    <span id="hclock"></span>
+  </div>
+</header>
+
+<!-- ══════════════ SEARCH BAR ══════════════ -->
+<div id="search-bar">
+  Поиск: <span class="sq-tag" id="sq-label"></span>
+  <span id="search-stats"></span>
+  <button class="stag" onclick="clearSearch()" style="margin-left:6px">✕ Сбросить</button>
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+  <!-- ─── LEFT ─── -->
+  <div class="left-panel">
+    <div class="lp-tabs">
+      <div class="lp-tab active" onclick="switchLTab('districts',this)">Округа</div>
+      <div class="lp-tab" onclick="switchLTab('regions',this)">Регионы</div>
+    </div>
+    <div class="lp-body">
+      <div class="reg-search">
+        <span class="reg-search-ico">⌕</span>
+        <input id="regsearch" type="text" placeholder="Найти регион…" oninput="filterRegions(this.value)">
+      </div>
+      <div id="districts-panel"></div>
+      <div id="regions-panel" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ─── CENTER ─── -->
+  <div class="center">
+    <div class="map-wrap">
+      <svg id="map-svg" viewBox="100 80 820 430" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <g id="map-g"></g>
+      </svg>
+      <div class="map-controls">
+        <button class="mc-btn active" onclick="mapMode('all',this)">Все</button>
+        <button class="mc-btn" onclick="mapMode('news',this)">С новостями</button>
+        <button class="mc-btn" onclick="mapMode('gov',this)">Госорганы</button>
+        <button class="mc-btn" onclick="mapMode('tg',this)">Telegram</button>
+      </div>
+      <div id="mtooltip">
+        <div id="mtt-name"></div>
+        <div id="mtt-district"></div>
+        <div id="mtt-sources"></div>
+      </div>
+      <div class="map-legend">
+        <div class="ml-row"><div class="ml-sw" style="background:#12213a"></div>Нет данных</div>
+        <div class="ml-row"><div class="ml-sw" style="background:#16305a"></div>Есть новости</div>
+        <div class="ml-row"><div class="ml-sw" style="background:#1d4ed8"></div>Выбран</div>
+      </div>
+    </div>
+
+    <div class="news-area">
+      <div class="news-toolbar">
+        <div class="news-title" id="news-title">Все регионы</div>
+        <div class="news-filters">
+          <button class="nf-btn active" onclick="setNFilter('all',this)">Все</button>
+          <button class="nf-btn" onclick="setNFilter('news',this)">СМИ</button>
+          <button class="nf-btn" onclick="setNFilter('tg',this)">Telegram</button>
+          <button class="nf-btn" onclick="setNFilter('gov',this)">Гос</button>
+          <button class="nf-btn" onclick="setNFilter('rss',this)">RSS</button>
+        </div>
+      </div>
+      <div id="news-list"></div>
+    </div>
+  </div>
+
+  <!-- ─── RIGHT ─── -->
+  <div class="right-panel">
+    <div class="rp-header">
+      <div class="rp-title">Мониторинг</div>
+      <div class="stats-row">
+        <div class="stat-b">
+          <div class="stat-l">Новостей</div>
+          <div class="stat-v c-blue" id="st-news">0</div>
+          <div class="stat-s">за 24 ч</div>
+        </div>
+        <div class="stat-b">
+          <div class="stat-l">Источников</div>
+          <div class="stat-v c-green" id="st-src">0</div>
+          <div class="stat-s">RSS + TG</div>
+        </div>
+        <div class="stat-b">
+          <div class="stat-l">Регионов</div>
+          <div class="stat-v" id="st-reg">89</div>
+          <div class="stat-s">субъектов</div>
+        </div>
+        <div class="stat-b">
+          <div class="stat-l">Обновлено</div>
+          <div class="stat-v c-amber" id="st-upd" style="font-size:11px;margin-top:3px">—</div>
+          <div class="stat-s">авто 5 мин</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-tabs">
+      <div class="rp-tab active" onclick="switchRTab('sources',this)">Источники</div>
+      <div class="rp-tab" onclick="switchRTab('tgfeed',this)">TG-лента</div>
+    </div>
+
+    <div class="rp-body">
+      <div id="rp-sources" class="rp-pane active"></div>
+      <div id="rp-tgfeed" class="rp-pane">
+        <div id="tg-feed-items"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA — 89 REGIONS
+═══════════════════════════════════════════════════════════ */
+const DISTRICTS = [
+  {id:'cfo', name:'Центральный ФО',        short:'ЦФО',  color:'#3b82f6'},
+  {id:'szfo',name:'Северо-Западный ФО',    short:'СЗФО', color:'#10b981'},
+  {id:'yfo', name:'Южный ФО',              short:'ЮФО',  color:'#ef4444'},
+  {id:'skfo',name:'Северо-Кавказский ФО',  short:'СКФО', color:'#f59e0b'},
+  {id:'pfo', name:'Приволжский ФО',        short:'ПФО',  color:'#8b5cf6'},
+  {id:'ufo', name:'Уральский ФО',          short:'УФО',  color:'#06b6d4'},
+  {id:'sfo', name:'Сибирский ФО',          short:'СФО',  color:'#ec4899'},
+  {id:'dfo', name:'Дальневосточный ФО',    short:'ДФО',  color:'#f97316'},
+];
+
+// Each region: id, name, district, map coords (cx,cy = center of schematic block), w, h
+const REGIONS = [
+/* ── ЦФО ──────────────────────────────────────────────── */
+{id:'msk',  name:'Москва',                   d:'cfo', cx:248,cy:252,w:18,h:14},
+{id:'mo',   name:'Московская область',       d:'cfo', cx:255,cy:268,w:36,h:22},
+{id:'bel',  name:'Белгородская область',     d:'cfo', cx:270,cy:310,w:28,h:18},
+{id:'bry',  name:'Брянская область',         d:'cfo', cx:220,cy:294,w:28,h:18},
+{id:'vla',  name:'Владимирская область',     d:'cfo', cx:292,cy:252,w:30,h:18},
+{id:'vor',  name:'Воронежская область',      d:'cfo', cx:300,cy:300,w:32,h:22},
+{id:'iva',  name:'Ивановская область',       d:'cfo', cx:310,cy:238,w:26,h:16},
+{id:'kal',  name:'Калужская область',        d:'cfo', cx:238,cy:272,w:26,h:16},
+{id:'kos',  name:'Костромская область',      d:'cfo', cx:330,cy:224,w:30,h:18},
+{id:'kur',  name:'Курская область',          d:'cfo', cx:256,cy:300,w:26,h:16},
+{id:'lip',  name:'Липецкая область',         d:'cfo', cx:296,cy:284,w:26,h:16},
+{id:'orl',  name:'Орловская область',        d:'cfo', cx:258,cy:284,w:24,h:16},
+{id:'ryz',  name:'Рязанская область',        d:'cfo', cx:310,cy:268,w:28,h:18},
+{id:'sml',  name:'Смоленская область',       d:'cfo', cx:210,cy:270,w:28,h:18},
+{id:'tam',  name:'Тамбовская область',       d:'cfo', cx:322,cy:284,w:26,h:16},
+{id:'tve',  name:'Тверская область',         d:'cfo', cx:245,cy:232,w:32,h:20},
+{id:'tul',  name:'Тульская область',         d:'cfo', cx:270,cy:272,w:26,h:16},
+{id:'yar',  name:'Ярославская область',      d:'cfo', cx:316,cy:216,w:28,h:16},
+/* ── СЗФО ──────────────────────────────────────────────── */
+{id:'spb',  name:'Санкт-Петербург',          d:'szfo',cx:192,cy:202,w:14,h:12},
+{id:'len',  name:'Ленинградская область',    d:'szfo',cx:204,cy:210,w:30,h:20},
+{id:'arc',  name:'Архангельская область',    d:'szfo',cx:314,cy:148,w:60,h:50},
+{id:'volog',name:'Вологодская область',      d:'szfo',cx:310,cy:198,w:42,h:28},
+{id:'kaln', name:'Калининградская область',  d:'szfo',cx:148,cy:258,w:22,h:14},
+{id:'kar',  name:'Республика Карелия',       d:'szfo',cx:202,cy:170,w:36,h:36},
+{id:'kom',  name:'Республика Коми',          d:'szfo',cx:390,cy:148,w:70,h:58},
+{id:'mur',  name:'Мурманская область',       d:'szfo',cx:228,cy:126,w:42,h:40},
+{id:'nov',  name:'Новгородская область',     d:'szfo',cx:220,cy:226,w:30,h:18},
+{id:'psk',  name:'Псковская область',        d:'szfo',cx:196,cy:228,w:26,h:18},
+{id:'nen',  name:'НАО',                      d:'szfo',cx:448,cy:118,w:52,h:44},
+/* ── ЮФО ──────────────────────────────────────────────── */
+{id:'krd',  name:'Краснодарский край',       d:'yfo', cx:228,cy:348,w:42,h:26},
+{id:'ady',  name:'Республика Адыгея',        d:'yfo', cx:228,cy:338,w:20,h:12},
+{id:'klm',  name:'Республика Калмыкия',      d:'yfo', cx:340,cy:342,w:32,h:22},
+{id:'cry',  name:'Республика Крым',          d:'yfo', cx:232,cy:372,w:34,h:18},
+{id:'ast',  name:'Астраханская область',     d:'yfo', cx:376,cy:348,w:28,h:24},
+{id:'vol',  name:'Волгоградская область',    d:'yfo', cx:340,cy:318,w:30,h:24},
+{id:'ros',  name:'Ростовская область',       d:'yfo', cx:292,cy:338,w:34,h:22},
+{id:'sev',  name:'Севастополь',              d:'yfo', cx:224,cy:382,w:10,h:8},
+/* ── СКФО ──────────────────────────────────────────────── */
+{id:'dag',  name:'Республика Дагестан',      d:'skfo',cx:330,cy:378,w:28,h:22},
+{id:'ing',  name:'Республика Ингушетия',     d:'skfo',cx:304,cy:375,w:14,h:12},
+{id:'kbr',  name:'Кабардино-Балкария',       d:'skfo',cx:282,cy:372,w:18,h:14},
+{id:'kch',  name:'Карачаево-Черкессия',      d:'skfo',cx:262,cy:366,w:18,h:14},
+{id:'noo',  name:'Северная Осетия',          d:'skfo',cx:298,cy:368,w:14,h:12},
+{id:'che',  name:'Чеченская Республика',     d:'skfo',cx:316,cy:370,w:16,h:13},
+{id:'stv',  name:'Ставропольский край',      d:'skfo',cx:290,cy:352,w:36,h:22},
+/* ── ПФО ──────────────────────────────────────────────── */
+{id:'nnv',  name:'Нижегородская область',    d:'pfo', cx:366,cy:248,w:36,h:24},
+{id:'tat',  name:'Республика Татарстан',     d:'pfo', cx:420,cy:252,w:36,h:22},
+{id:'bsh',  name:'Республика Башкортостан',  d:'pfo', cx:466,cy:270,w:34,h:26},
+{id:'chuv', name:'Чувашская Республика',     d:'pfo', cx:398,cy:258,w:22,h:15},
+{id:'mrd',  name:'Республика Мордовия',      d:'pfo', cx:360,cy:272,w:26,h:16},
+{id:'mari', name:'Республика Марий Эл',      d:'pfo', cx:396,cy:242,w:24,h:14},
+{id:'udr',  name:'Удмуртская Республика',    d:'pfo', cx:444,cy:234,w:26,h:22},
+{id:'per',  name:'Пермский край',            d:'pfo', cx:460,cy:208,w:36,h:32},
+{id:'kir',  name:'Кировская область',        d:'pfo', cx:406,cy:212,w:40,h:30},
+{id:'ore',  name:'Оренбургская область',     d:'pfo', cx:448,cy:300,w:40,h:24},
+{id:'pen',  name:'Пензенская область',       d:'pfo', cx:366,cy:286,w:26,h:16},
+{id:'sam',  name:'Самарская область',        d:'pfo', cx:426,cy:280,w:28,h:18},
+{id:'sar',  name:'Саратовская область',      d:'pfo', cx:390,cy:300,w:30,h:22},
+{id:'ulv',  name:'Ульяновская область',      d:'pfo', cx:406,cy:272,w:24,h:18},
+/* ── УФО ──────────────────────────────────────────────── */
+{id:'svrd',  name:'Свердловская область',    d:'ufo', cx:506,cy:224,w:36,h:28},
+{id:'chel',  name:'Челябинская область',     d:'ufo', cx:498,cy:258,w:32,h:22},
+{id:'tum',   name:'Тюменская область',       d:'ufo', cx:520,cy:272,w:36,h:28},
+{id:'kgn',   name:'Курганская область',      d:'ufo', cx:490,cy:280,w:28,h:18},
+{id:'khmao', name:'ХМАО — Югра',            d:'ufo', cx:548,cy:192,w:60,h:40},
+{id:'ynao',  name:'ЯНАО',                   d:'ufo', cx:530,cy:148,w:72,h:44},
+/* ── СФО ──────────────────────────────────────────────── */
+{id:'nsk',  name:'Новосибирская область',    d:'sfo', cx:600,cy:290,w:36,h:24},
+{id:'krsk', name:'Красноярский край',        d:'sfo', cx:662,cy:220,w:80,h:70},
+{id:'irk',  name:'Иркутская область',        d:'sfo', cx:714,cy:290,w:58,h:50},
+{id:'omsk', name:'Омская область',           d:'sfo', cx:562,cy:276,w:34,h:26},
+{id:'tom',  name:'Томская область',          d:'sfo', cx:590,cy:242,w:36,h:28},
+{id:'kem',  name:'Кемеровская область',      d:'sfo', cx:618,cy:290,w:30,h:22},
+{id:'alkt', name:'Алтайский край',           d:'sfo', cx:578,cy:322,w:38,h:26},
+{id:'altR', name:'Республика Алтай',         d:'sfo', cx:598,cy:342,w:28,h:22},
+{id:'tuv',  name:'Республика Тыва',          d:'sfo', cx:642,cy:342,w:36,h:26},
+{id:'kha',  name:'Республика Хакасия',       d:'sfo', cx:650,cy:310,w:28,h:22},
+/* ── ДФО ──────────────────────────────────────────────── */
+{id:'ykt',  name:'Республика Саха (Якутия)', d:'dfo', cx:760,cy:168,w:120,h:120},
+{id:'khbr', name:'Хабаровский край',         d:'dfo', cx:844,cy:298,w:44,h:50},
+{id:'prm',  name:'Приморский край',          d:'dfo', cx:848,cy:362,w:36,h:36},
+{id:'amr',  name:'Амурская область',         d:'dfo', cx:800,cy:332,w:44,h:36},
+{id:'sakh', name:'Сахалинская область',      d:'dfo', cx:898,cy:310,w:20,h:60},
+{id:'kamt', name:'Камчатский край',          d:'dfo', cx:886,cy:218,w:30,h:58},
+{id:'mag',  name:'Магаданская область',      d:'dfo', cx:838,cy:212,w:54,h:44},
+{id:'eao',  name:'ЕАО',                     d:'dfo', cx:832,cy:334,w:28,h:20},
+{id:'cho',  name:'Чукотский АО',             d:'dfo', cx:882,cy:128,w:80,h:64},
+{id:'bur',  name:'Республика Бурятия',       d:'dfo', cx:748,cy:316,w:48,h:40},
+{id:'zab',  name:'Забайкальский край',       d:'dfo', cx:774,cy:332,w:42,h:36},
+/* ── Новые регионы (2022+) ─────────────────────────────── */
+{id:'dnr',  name:'ДНР',                     d:'yfo', cx:270,cy:323,w:24,h:15},
+{id:'lnr',  name:'ЛНР',                     d:'yfo', cx:294,cy:320,w:22,h:14},
+{id:'zpr',  name:'Запорожская область',      d:'yfo', cx:256,cy:336,w:24,h:14},
+{id:'khr',  name:'Херсонская область',       d:'yfo', cx:248,cy:358,w:26,h:14},
+];
+
+/* ── RSS SOURCES per region ─────────────────────────────── */
+const REGION_SOURCES = {
+msk:  [{n:'Mos.ru',        t:'gov',  u:'https://www.mos.ru/news/rss.xml'},
+       {n:'M24',           t:'news', u:'https://www.m24.ru/rss.xml'},
+       {n:'Московский комсомолец',t:'news',u:'https://www.mk.ru/rss/index.xml'},
+       {n:'Интерфакс-Москва',t:'news',u:'https://www.interfax.ru/moscow/rss.asp'},
+       {n:'@govoritmsk',   t:'tg',   u:'https://t.me/s/govoritmsk'},
+       {n:'@mos_sobyanin', t:'tg',   u:'https://t.me/s/mos_sobyanin'}],
+mo:   [{n:'Правительство МО',t:'gov',u:'https://mosreg.ru/rss'},
+       {n:'РИАМО',         t:'news', u:'https://riamo.ru/rss'},
+       {n:'@mosobl_official',t:'tg', u:'https://t.me/s/mosobl_official'}],
+spb:  [{n:'gov.spb.ru',    t:'gov',  u:'https://www.gov.spb.ru/rss/'},
+       {n:'Фонтанка.ру',   t:'news', u:'https://www.fontanka.ru/fontanka.rss'},
+       {n:'Деловой Петербург',t:'news',u:'https://www.dp.ru/rss/all/'},
+       {n:'Петербург Онлайн',t:'news',u:'https://peterburg.online/rss'},
+       {n:'@spb_today',    t:'tg',   u:'https://t.me/s/spb_today'},
+       {n:'@piterofficial', t:'tg',  u:'https://t.me/s/piterofficial'}],
+len:  [{n:'Лен. область',  t:'gov',  u:'https://lenobl.ru/rss/'},
+       {n:'47news',        t:'news', u:'https://47news.ru/rss/all/'},
+       {n:'@lo_news',      t:'tg',   u:'https://t.me/s/lo_news'}],
+arc:  [{n:'Правительство АО',t:'gov',u:'https://dvinaland.ru/rss'},
+       {n:'29.ru',         t:'news', u:'https://29.ru/rss/all/'},
+       {n:'@arhangelsk_news',t:'tg', u:'https://t.me/s/arhangelsk_news'}],
+volog:[{n:'Вологодская обл.',t:'gov',u:'https://vologda-oblast.ru/rss'},
+       {n:'Вологда Регион', t:'news',u:'https://vologdaregion.ru/rss'},
+       {n:'@vologda35',    t:'tg',   u:'https://t.me/s/vologda35'}],
+kaln: [{n:'Правительство КО',t:'gov',u:'https://gov39.ru/rss'},
+       {n:'Клопс.ру',      t:'news', u:'https://klops.ru/rss/news.xml'},
+       {n:'Новый Калининград',t:'news',u:'https://www.newkaliningrad.ru/rss/all'},
+       {n:'@kgd_gov',      t:'tg',   u:'https://t.me/s/kgd_gov'}],
+kar:  [{n:'Правительство РК',t:'gov',u:'https://karelia.gov.ru/rss'},
+       {n:'Карелия.Ньюс',  t:'news', u:'https://karelia.news/rss'},
+       {n:'@karelia_news', t:'tg',   u:'https://t.me/s/karelia_news'}],
+kom:  [{n:'Правительство РК',t:'gov',u:'https://rkomi.ru/rss'},
+       {n:'Комиинформ',    t:'news', u:'https://www.komiinform.ru/rss/news.xml'},
+       {n:'@komi_news',    t:'tg',   u:'https://t.me/s/komi_news'}],
+mur:  [{n:'Правительство МО',t:'gov',u:'https://gov-murman.ru/rss/'},
+       {n:'Хибины.com',    t:'news', u:'https://www.hibiny.com/rss/'},
+       {n:'@murman_news',  t:'tg',   u:'https://t.me/s/murman_news'}],
+nov:  [{n:'Правительство НО',t:'gov',u:'https://www.novobrd.ru/rss'},
+       {n:'Новгород.ру',   t:'news', u:'https://novgorod.ru/rss'},
+       {n:'@novgorod_news',t:'tg',   u:'https://t.me/s/novgorod_news'}],
+psk:  [{n:'Псковская область',t:'gov',u:'https://pskov.ru/rss'},
+       {n:'Псковская лента',t:'news', u:'https://pln-pskov.ru/rss/'},
+       {n:'@pskov_news',   t:'tg',   u:'https://t.me/s/pskov_news'}],
+nen:  [{n:'Администрация НАО',t:'gov',u:'https://adm-nao.ru/rss'},
+       {n:'НарьянМарИнформ',t:'news',u:'https://narianmar.com/rss'}],
+krd:  [{n:'Администрация КК',t:'gov',u:'https://admkrai.krasnodar.ru/rss'},
+       {n:'НГ-Кубань',     t:'news', u:'https://ngkuban.ru/rss'},
+       {n:'Кубань 24',     t:'news', u:'https://kuban24.tv/rss/news'},
+       {n:'@kuban_news',   t:'tg',   u:'https://t.me/s/kuban_news'},
+       {n:'@yugru',        t:'tg',   u:'https://t.me/s/yugru'}],
+ady:  [{n:'Адыгея-сегодня',t:'gov', u:'https://adygheya.ru/rss'},
+       {n:'Адыгея.СМИ',    t:'news', u:'https://adygsmi.ru/rss'}],
+klm:  [{n:'Правительство РК',t:'gov',u:'https://kalmregion.ru/rss'},
+       {n:'Степные вести', t:'news', u:'https://stepnoye.com/rss'}],
+cry:  [{n:'Совет министров Крыма',t:'gov',u:'https://crimea.gov.ru/rss'},
+       {n:'Крыминформ',    t:'news', u:'https://crimea-inform.ru/rss'},
+       {n:'@crimea_news',  t:'tg',   u:'https://t.me/s/crimea_news'}],
+ast:  [{n:'Правительство АО',t:'gov',u:'https://astrobl.ru/rss'},
+       {n:'Астрахань 24',  t:'news', u:'https://astr.ru/rss'},
+       {n:'@astranh_news', t:'tg',   u:'https://t.me/s/astranh_news'}],
+vol:  [{n:'Правительство ВО',t:'gov',u:'https://volgograd.ru/rss'},
+       {n:'V1.ru',         t:'news', u:'https://v1.ru/rss/all/'},
+       {n:'@volgograd_news',t:'tg',  u:'https://t.me/s/volgograd_news'}],
+ros:  [{n:'Правительство РО',t:'gov',u:'https://donland.ru/rss'},
+       {n:'161.ru',        t:'news', u:'https://161.ru/rss/all/'},
+       {n:'ДонТАСС',       t:'news', u:'https://donnews.ru/rss.xml'},
+       {n:'@rostov_ru',    t:'tg',   u:'https://t.me/s/rostov_ru'}],
+sev:  [{n:'gov.sevastopol.ru',t:'gov',u:'https://www.sevastopol.gov.ru/rss'}],
+dag:  [{n:'Правительство РД',t:'gov',u:'https://e-dag.ru/rss'},
+       {n:'РИА Дагестан',  t:'news', u:'https://riadagestan.ru/rss/'},
+       {n:'@dagestan_news',t:'tg',   u:'https://t.me/s/dagestan_news'}],
+ing:  [{n:'Правительство РИ',t:'gov',u:'https://ingushetia.ru/rss'},
+       {n:'Ингушетия.ру',  t:'news', u:'https://ingushetia.ru/rss/news'}],
+kbr:  [{n:'Правительство КБР',t:'gov',u:'https://www.kbr.ru/rss'},
+       {n:'Кабардино-Балкария',t:'news',u:'https://kbrinfo.ru/rss'}],
+kch:  [{n:'Правительство КЧР',t:'gov',u:'https://www.kchr.ru/rss'},
+       {n:'КЧР Медиа',     t:'news', u:'https://kchr.media/rss'}],
+noo:  [{n:'Правительство РСО',t:'gov',u:'https://alania.gov.ru/rss'},
+       {n:'15-й регион',   t:'news', u:'https://region15.ru/rss'}],
+che:  [{n:'Правительство ЧР',t:'gov',u:'https://chechnya.gov.ru/rss'},
+       {n:'Чечня Сегодня', t:'news', u:'https://chechnyatoday.com/rss'},
+       {n:'@kadyrov_95',   t:'tg',   u:'https://t.me/s/kadyrov_95'}],
+stv:  [{n:'Правительство СК',t:'gov',u:'https://stavregion.ru/rss'},
+       {n:'СтавропольПравда',t:'news',u:'https://stapravda.ru/rss'},
+       {n:'@stavropol_news',t:'tg',  u:'https://t.me/s/stavropol_news'}],
+nnv:  [{n:'Правительство НО',t:'gov',u:'https://government-nnov.ru/rss'},
+       {n:'NN.ru',         t:'news', u:'https://nn.ru/rss'},
+       {n:'Нижегородская правда',t:'news',u:'https://pravda-nn.ru/rss'},
+       {n:'@nnov_news',    t:'tg',   u:'https://t.me/s/nnov_news'}],
+tat:  [{n:'tatarstan.ru',  t:'gov',  u:'https://tatarstan.ru/rss'},
+       {n:'Бизнес Online', t:'news', u:'https://www.business-gazeta.ru/rss/all'},
+       {n:'Inkazan',       t:'news', u:'https://inkazan.ru/rss'},
+       {n:'@tatarstan24',  t:'tg',   u:'https://t.me/s/tatarstan24'},
+       {n:'@tatarstan_live',t:'tg',  u:'https://t.me/s/tatarstan_live'}],
+bsh:  [{n:'Башкирия.gov',  t:'gov',  u:'https://www.bashkortostan.ru/rss'},
+       {n:'UFA.ru',        t:'news', u:'https://ufa.ru/rss/all/'},
+       {n:'Медиакорсеть',  t:'news', u:'https://mkset.ru/rss'},
+       {n:'@bash_news',    t:'tg',   u:'https://t.me/s/bash_news'}],
+chuv: [{n:'Правительство ЧР',t:'gov',u:'https://gov.cap.ru/rss'},
+       {n:'Чувашия.ру',    t:'news', u:'https://chuvashia.ru/rss'},
+       {n:'@chuvashia_news',t:'tg',  u:'https://t.me/s/chuvashia_news'}],
+mrd:  [{n:'Правительство РМ',t:'gov',u:'https://e.mordovia.ru/rss'},
+       {n:'Мордовия Медиа',t:'news', u:'https://mordovmedia.ru/rss'}],
+mari: [{n:'Правительство РМЭ',t:'gov',u:'https://gov.mari.ru/rss'},
+       {n:'МК в Марий Эл', t:'news', u:'https://mk.ru/regions/yoshkar-ola/rss/'}],
+udr:  [{n:'Правительство УР',t:'gov',u:'https://udmurt.ru/rss'},
+       {n:'ИжLife',        t:'news', u:'https://izh.life/rss'},
+       {n:'@udmurtia_news',t:'tg',   u:'https://t.me/s/udmurtia_news'}],
+per:  [{n:'Правительство ПК',t:'gov',u:'https://www.permkrai.ru/rss'},
+       {n:'59.ru',         t:'news', u:'https://59.ru/rss/all/'},
+       {n:'Звезда Пермь',  t:'news', u:'https://zvzda.ru/rss'},
+       {n:'@perm_news',    t:'tg',   u:'https://t.me/s/perm_news'}],
+kir:  [{n:'Правительство КО',t:'gov',u:'https://www.kirovreg.ru/rss'},
+       {n:'Кировская правда',t:'news',u:'https://kirovpravda.ru/rss'},
+       {n:'@kirov_news',   t:'tg',   u:'https://t.me/s/kirov_news'}],
+ore:  [{n:'Оренбургская обл.',t:'gov',u:'https://www.orenburg-gov.ru/rss'},
+       {n:'56.ru',         t:'news', u:'https://56.ru/rss/all/'},
+       {n:'@orenburg_news',t:'tg',   u:'https://t.me/s/orenburg_news'}],
+pen:  [{n:'Правительство ПО',t:'gov',u:'https://www.penzareg.ru/rss'},
+       {n:'Пенза-Пресс',   t:'news', u:'https://penza-press.ru/rss'},
+       {n:'@penza_news',   t:'tg',   u:'https://t.me/s/penza_news'}],
+sam:  [{n:'Самарская обл.',t:'gov',  u:'https://www.samregion.ru/rss'},
+       {n:'63.ru',         t:'news', u:'https://63.ru/rss/all/'},
+       {n:'Самарское обозрение',t:'news',u:'https://samaratoday.ru/rss'},
+       {n:'@samara_news',  t:'tg',   u:'https://t.me/s/samara_news'}],
+sar:  [{n:'Правительство СО',t:'gov',u:'https://saratov.gov.ru/rss'},
+       {n:'64.ru',         t:'news', u:'https://64.ru/rss/all/'},
+       {n:'@saratov_news', t:'tg',   u:'https://t.me/s/saratov_news'}],
+ulv:  [{n:'Правительство УО',t:'gov',u:'https://ulgov.ru/rss'},
+       {n:'73онлайн',      t:'news', u:'https://73online.ru/rss'},
+       {n:'@ulyanovsk_news',t:'tg',  u:'https://t.me/s/ulyanovsk_news'}],
+svrd: [{n:'Midural.ru',    t:'gov',  u:'https://midural.ru/rss'},
+       {n:'Е1.ру',         t:'news', u:'https://www.e1.ru/export/rss.xml'},
+       {n:'Областная газета',t:'news',u:'https://www.oblgazeta.ru/rss'},
+       {n:'@eoblast',      t:'tg',   u:'https://t.me/s/eoblast'},
+       {n:'@ekaterinburg_live',t:'tg',u:'https://t.me/s/ekaterinburg_live'}],
+chel: [{n:'Правительство ЧО',t:'gov',u:'https://gubernator74.ru/rss'},
+       {n:'74.ru',         t:'news', u:'https://74.ru/rss/all/'},
+       {n:'Южноуральская панорама',t:'news',u:'https://up74.ru/rss'},
+       {n:'@chelyabinsk_news',t:'tg',u:'https://t.me/s/chelyabinsk_news'}],
+tum:  [{n:'Правительство ТО',t:'gov',u:'https://admtyumen.ru/rss'},
+       {n:'72.ru',         t:'news', u:'https://72.ru/rss/all/'},
+       {n:'@tyumen_news',  t:'tg',   u:'https://t.me/s/tyumen_news'}],
+kgn:  [{n:'Правительство КО',t:'gov',u:'https://kurganobl.ru/rss'},
+       {n:'Курган и курганцы',t:'news',u:'https://kikonline.ru/rss'},
+       {n:'@kurgan_news',  t:'tg',   u:'https://t.me/s/kurgan_news'}],
+khmao:[{n:'Правительство ХМАО',t:'gov',u:'https://admhmao.ru/rss'},
+       {n:'Ugra-news',     t:'news', u:'https://ugra-news.ru/rss'},
+       {n:'@hmao_news',    t:'tg',   u:'https://t.me/s/hmao_news'}],
+ynao: [{n:'Правительство ЯНАО',t:'gov',u:'https://yanao.ru/rss'},
+       {n:'Красный Север', t:'news', u:'https://ks-yanao.ru/rss'},
+       {n:'@yanao_news',   t:'tg',   u:'https://t.me/s/yanao_news'}],
+nsk:  [{n:'Правительство НСО',t:'gov',u:'https://www.nso.ru/rss'},
+       {n:'НГС.ру',        t:'news', u:'https://ngs.ru/rss/all'},
+       {n:'Тайга.инфо',    t:'news', u:'https://tayga.info/rss'},
+       {n:'@nsk_news',     t:'tg',   u:'https://t.me/s/nsk_news'},
+       {n:'@novosibirsk_online',t:'tg',u:'https://t.me/s/novosibirsk_online'}],
+krsk: [{n:'Красноярский край',t:'gov',u:'https://www.krskstate.ru/rss'},
+       {n:'NGS24.ru',      t:'news', u:'https://ngs24.ru/rss/all'},
+       {n:'Newslab.ru',    t:'news', u:'https://newslab.ru/rss/news'},
+       {n:'@krasnoyarsk_news',t:'tg',u:'https://t.me/s/krasnoyarsk_news'},
+       {n:'@podyom',       t:'tg',   u:'https://t.me/s/podyom'}],
+irk:  [{n:'Правительство ИО',t:'gov',u:'https://irkobl.ru/rss'},
+       {n:'ИрСити',        t:'news', u:'https://ircity.ru/rss/all'},
+       {n:'ИРК.ру',        t:'news', u:'https://irk.ru/rss'},
+       {n:'@irkutsk_news', t:'tg',   u:'https://t.me/s/irkutsk_news'}],
+omsk: [{n:'Правительство ОО',t:'gov',u:'https://omsk.gov.ru/rss'},
+       {n:'НГС Омск',      t:'news', u:'https://ngs55.ru/rss/all'},
+       {n:'@omsk_news',    t:'tg',   u:'https://t.me/s/omsk_news'}],
+tom:  [{n:'Правительство ТО',t:'gov',u:'https://tomsk.gov.ru/rss'},
+       {n:'Томск.ру',      t:'news', u:'https://tomsk.ru/rss/all'},
+       {n:'@tomsk_news',   t:'tg',   u:'https://t.me/s/tomsk_news'}],
+kem:  [{n:'Правительство КО',t:'gov',u:'https://www.ako.ru/rss'},
+       {n:'НГС Кемерово',  t:'news', u:'https://ngs42.ru/rss/all'},
+       {n:'Кузбасс',       t:'news', u:'https://kuzbass85.ru/rss'},
+       {n:'@kuzbass_news', t:'tg',   u:'https://t.me/s/kuzbass_news'}],
+alkt: [{n:'Правительство АК',t:'gov',u:'https://www.altairegion22.ru/rss'},
+       {n:'Алтапресс',     t:'news', u:'https://altapress.ru/rss'},
+       {n:'@altay_krai',   t:'tg',   u:'https://t.me/s/altay_krai'}],
+altR: [{n:'Правительство РА',t:'gov',u:'https://www.altai-republic.ru/rss'},
+       {n:'Горно-Алтайск', t:'news', u:'https://gorno-altaisk.info/rss'}],
+tuv:  [{n:'Правительство РТ',t:'gov',u:'https://www.tuva.ru/rss'},
+       {n:'Плюс Информ',   t:'news', u:'https://plusinform.ru/rss'},
+       {n:'@tuva_news',    t:'tg',   u:'https://t.me/s/tuva_news'}],
+kha:  [{n:'Правительство РХ',t:'gov',u:'https://www.r-19.ru/rss'},
+       {n:'Хакасия-Информ',t:'news', u:'https://19rus.info/rss'},
+       {n:'@khakasia_news',t:'tg',   u:'https://t.me/s/khakasia_news'}],
+ykt:  [{n:'Правительство РС(Я)',t:'gov',u:'https://www.sakha.gov.ru/rss'},
+       {n:'Якутия Медиа',  t:'news', u:'https://yakutia-media.ru/rss'},
+       {n:'SakhaDay',      t:'news', u:'https://sakhaday.ru/rss'},
+       {n:'@yakutia_news', t:'tg',   u:'https://t.me/s/yakutia_news'}],
+khbr: [{n:'Правительство ХК',t:'gov',u:'https://khabkrai.ru/rss'},
+       {n:'DVhab.ru',      t:'news', u:'https://dvhab.ru/rss'},
+       {n:'@khabarovsk_news',t:'tg', u:'https://t.me/s/khabarovsk_news'}],
+prm:  [{n:'Правительство ПК',t:'gov',u:'https://www.primorsky.ru/rss'},
+       {n:'VL.ru',         t:'news', u:'https://www.vl.ru/rss/news.xml'},
+       {n:'Дейта.ру',      t:'news', u:'https://deita.ru/rss'},
+       {n:'@primorye_news',t:'tg',   u:'https://t.me/s/primorye_news'}],
+amr:  [{n:'Правительство АО',t:'gov',u:'https://www.amurobl.ru/rss'},
+       {n:'АмурМедиа',     t:'news', u:'https://amurmedia.ru/rss'},
+       {n:'@amur_news',    t:'tg',   u:'https://t.me/s/amur_news'}],
+sakh: [{n:'Правительство СО',t:'gov',u:'https://sakhalin.gov.ru/rss'},
+       {n:'Sakh.com',      t:'news', u:'https://www.sakh.com/rss/all'},
+       {n:'@sakhalin_news',t:'tg',   u:'https://t.me/s/sakhalin_news'}],
+kamt: [{n:'Правительство КК',t:'gov',u:'https://www.kamgov.ru/rss'},
+       {n:'41.ru',         t:'news', u:'https://41.ru/rss/all'},
+       {n:'@kamchatka_news',t:'tg',  u:'https://t.me/s/kamchatka_news'}],
+mag:  [{n:'Правительство МО',t:'gov',u:'https://magadan.gov.ru/rss'},
+       {n:'Magadanmedia',  t:'news', u:'https://magadanmedia.ru/rss'},
+       {n:'@magadan_news', t:'tg',   u:'https://t.me/s/magadan_news'}],
+eao:  [{n:'Правительство ЕАО',t:'gov',u:'https://www.eao.ru/rss'},
+       {n:'EAOMedia',      t:'news', u:'https://eaomedia.ru/rss'},
+       {n:'@eao_news',     t:'tg',   u:'https://t.me/s/eao_news'}],
+cho:  [{n:'Правительство ЧАО',t:'gov',u:'https://chukotka.gov.ru/rss'},
+       {n:'ЧукоткаМедиа',  t:'news', u:'https://chukotka.media/rss'}],
+bur:  [{n:'Правительство РБ',t:'gov',u:'https://www.buryatia.gov.ru/rss'},
+       {n:'Байкал Медиа',  t:'news', u:'https://baikal-media.ru/rss'},
+       {n:'Информ Полис',  t:'news', u:'https://www.infpol.ru/rss'},
+       {n:'@buryatia_news',t:'tg',   u:'https://t.me/s/buryatia_news'}],
+zab:  [{n:'Правительство ЗК',t:'gov',u:'https://www.zabkrai.ru/rss'},
+       {n:'Чита.ру',       t:'news', u:'https://chita.ru/rss/all/'},
+       {n:'@zabaikal_news',t:'tg',   u:'https://t.me/s/zabaikal_news'}],
+dnr:  [{n:'Правительство ДНР',t:'gov',u:'https://denis-pushilin.ru/rss'},
+       {n:'ДАН',           t:'news', u:'https://dan-news.info/rss'},
+       {n:'@dnr_news',     t:'tg',   u:'https://t.me/s/dnr_news'}],
+lnr:  [{n:'Правительство ЛНР',t:'gov',u:'https://lnr.su/rss'},
+       {n:'Луганск 24',    t:'news', u:'https://lugansk24.info/rss'},
+       {n:'@lnr_news',     t:'tg',   u:'https://t.me/s/lnr_news'}],
+zpr:  [{n:'Администрация ЗО',t:'gov',u:'https://zapregion.ru/rss'},
+       {n:'Запорожье Сегодня',t:'news',u:'https://zp.ru/rss'}],
+khr:  [{n:'Администрация ХО',t:'gov',u:'https://herson.gov.ru/rss'},
+       {n:'Херсон Медиа',  t:'news', u:'https://kherson.ru/rss'}],
+// remaining regions without deep data get defaults
+bel:  [{n:'Белгород Медиа', t:'gov', u:'https://belregion.ru/rss'},
+       {n:'БелПресса',     t:'news', u:'https://www.belpressa.ru/rss'},
+       {n:'@belgorod_news',t:'tg',   u:'https://t.me/s/belgorod_news'}],
+bry:  [{n:'Правительство БО',t:'gov',u:'https://www.bryanskobl.ru/rss'},
+       {n:'Брянская губерния',t:'news',u:'https://bg32.ru/rss'},
+       {n:'@bryansk_news', t:'tg',   u:'https://t.me/s/bryansk_news'}],
+vla:  [{n:'Правительство ВО',t:'gov',u:'https://avo.ru/rss'},
+       {n:'Зебра ТВ',      t:'news', u:'https://zebra-tv.ru/rss'},
+       {n:'@vladimir_news',t:'tg',   u:'https://t.me/s/vladimir_news'}],
+vor:  [{n:'Правительство ВО',t:'gov',u:'https://govvrn.ru/rss'},
+       {n:'МОЁ! Online',   t:'news', u:'https://moe-online.ru/rss'},
+       {n:'@voronezh_live',t:'tg',   u:'https://t.me/s/voronezh_live'}],
+iva:  [{n:'Правительство ИО',t:'gov',u:'https://ivanovoobl.ru/rss'},
+       {n:'Иваново Пресс', t:'news', u:'https://ivpress.ru/rss'}],
+kal:  [{n:'Правительство КО',t:'gov',u:'https://admoblkaluga.ru/rss'},
+       {n:'Калуга Медиа',  t:'news', u:'https://kaluga-media.ru/rss'}],
+kos:  [{n:'Правительство КО',t:'gov',u:'https://www.adm44.ru/rss'},
+       {n:'Народная газета',t:'news', u:'https://ng44.ru/rss'}],
+kur:  [{n:'Правительство КО',t:'gov',u:'https://rkursk.ru/rss'},
+       {n:'Курск Медиа',   t:'news', u:'https://kurskmedia.ru/rss'}],
+lip:  [{n:'Правительство ЛО',t:'gov',u:'https://admlip.ru/rss'},
+       {n:'Липецкое время',t:'news', u:'https://lptime.ru/rss'},
+       {n:'@lipetsk_news', t:'tg',   u:'https://t.me/s/lipetsk_news'}],
+orl:  [{n:'Правительство ОО',t:'gov',u:'https://orel.gov.ru/rss'},
+       {n:'Орёл Медиа',    t:'news', u:'https://orelmedia.ru/rss'}],
+ryz:  [{n:'Правительство РО',t:'gov',u:'https://ryazanreg.ru/rss'},
+       {n:'Рязань.ру',     t:'news', u:'https://www.rzn.info/rss'}],
+sml:  [{n:'Правительство СО',t:'gov',u:'https://www.admin-smolensk.ru/rss'},
+       {n:'Смоленская газета',t:'news',u:'https://smolgazeta.ru/rss'}],
+tam:  [{n:'Правительство ТО',t:'gov',u:'https://www.tambov.gov.ru/rss'},
+       {n:'ТамбовМедиа',   t:'news', u:'https://tambov.ru/rss'}],
+tve:  [{n:'Правительство ТО',t:'gov',u:'https://tverreg.ru/rss'},
+       {n:'Tverigrad',     t:'news', u:'https://tverigrad.ru/rss'}],
+tul:  [{n:'Правительство ТО',t:'gov',u:'https://tularegion.ru/rss'},
+       {n:'ТулаПресс',     t:'news', u:'https://tulapressa.ru/rss'},
+       {n:'@tula_news',    t:'tg',   u:'https://t.me/s/tula_news'}],
+yar:  [{n:'Правительство ЯО',t:'gov',u:'https://yarregion.ru/rss'},
+       {n:'Яррегион',      t:'news', u:'https://yarreg.ru/rss'},
+       {n:'@yaroslavl_news',t:'tg',  u:'https://t.me/s/yaroslavl_news'}],
+};
+
+/* FEDERAL SOURCES */
+const FEDERAL_SOURCES = {
+  smi: [
+    {n:'ТАСС',         u:'https://tass.ru/rss/v2.xml'},
+    {n:'РИА Новости',  u:'https://ria.ru/export/rss2/archive/index.xml'},
+    {n:'Коммерсант',   u:'https://www.kommersant.ru/RSS/main.xml'},
+    {n:'Известия',     u:'https://iz.ru/xml/rss/all.xml'},
+    {n:'Интерфакс',    u:'https://www.interfax.ru/rss.asp'},
+    {n:'Российская газета',u:'https://rg.ru/xml/index.xml'},
+    {n:'Ведомости',    u:'https://www.vedomosti.ru/rss/news'},
+    {n:'Новая газета', u:'https://novayagazeta.ru/rss/all.xml'},
+    {n:'Regnum',       u:'https://regnum.ru/rss'},
+    {n:'Регионы России',u:'https://rrnews.ru/rss'},
+  ],
+  gov: [
+    {n:'Kremlin.ru',   u:'http://kremlin.ru/events/all/feed'},
+    {n:'Правительство РФ',u:'http://government.ru/all/rss/'},
+    {n:'Минэкономики', u:'https://economy.gov.ru/material/rss.xml'},
+    {n:'Минфин',       u:'https://minfin.gov.ru/ru/press-center/rss/'},
+    {n:'Минздрав',     u:'https://minzdrav.gov.ru/news/feed'},
+    {n:'Минтранс',     u:'https://mintrans.gov.ru/press-center/rss'},
+    {n:'Минпромторг',  u:'https://minpromtorg.gov.ru/rss'},
+    {n:'Минцифры',     u:'https://digital.gov.ru/ru/events/rss/'},
+    {n:'Роспотребнадзор',u:'https://rospotrebnadzor.ru/rss'},
+    {n:'Росстат',      u:'https://rosstat.gov.ru/rss'},
+    {n:'ФНС России',   u:'https://www.nalog.gov.ru/rss/'},
+    {n:'Прокуратура РФ',u:'https://genproc.gov.ru/rss/smi/'},
+  ],
+  tg: [
+    {n:'НЕЗЫГАРЬ',     ch:'@russica2'},
+    {n:'Readovka',     ch:'@readovkanews'},
+    {n:'Baza',         ch:'@bazabazon'},
+    {n:'Mash',         ch:'@breakingmash'},
+    {n:'ВЧК-ОГПУ',     ch:'@vchkogpu'},
+    {n:'Медиазона',    ch:'@mediazzona'},
+    {n:'Коммерсант',   ch:'@kommersant'},
+    {n:'Регионы.ру',   ch:'@regionru'},
+    {n:'Губернаторы',  ch:'@governorsofrussia'},
+    {n:'Региональная политика',ch:'@regiopolit'},
+  ]
+};
+
+/* ── MOCK NEWS (demonstration) ──────────────────────────── */
+const MOCK_NEWS = [
+  {id:1, rid:'msk', title:'Мэр Москвы открыл новую станцию метро Гольяново на БКЛ', src:'Mos.ru', t:'gov', time:'47 мин', sum:'Торжественная церемония открытия прошла с участием первых пассажиров. Станция будет принимать до 30 тысяч пассажиров в сутки.'},
+  {id:2, rid:'msk', title:'В Москве введён новый тариф на вывоз ТКО с апреля 2026', src:'M24', t:'news', time:'1ч 20 мин', sum:'Тарифы повышены на 6,2% в соответствии с постановлением Правительства Москвы.'},
+  {id:3, rid:'msk', title:'Собянин: в 2026 году откроют 12 новых школ', src:'@mos_sobyanin', t:'tg', time:'2ч', sum:'Мэр сообщил о планах строительства образовательных учреждений на территории новых жилых кварталов.'},
+  {id:4, rid:'spb', title:'Бюджет Петербурга исполнен с профицитом 18 млрд рублей', src:'gov.spb.ru', t:'gov', time:'1ч 5 мин', sum:'По итогам I квартала 2026 года доходы превысили расходы на 18 млрд рублей. Средства направят на инфраструктуру.'},
+  {id:5, rid:'spb', title:'Разводка мостов начнётся с 25 апреля', src:'Фонтанка.ру', t:'news', time:'3ч', sum:'Навигационный сезон на Неве стартует раньше запланированного в связи с ранней весной.'},
+  {id:6, rid:'nnv', title:'ГАЗ анонсировал выпуск новой линейки электрогрузовиков', src:'NN.ru', t:'news', time:'2ч 15 мин', sum:'Завод ГАЗ в Нижнем Новгороде переходит на частичную электрификацию коммерческого транспорта.'},
+  {id:7, rid:'tat', title:'Казань примет WorldSkills в 2027 году', src:'tatarstan.ru', t:'gov', time:'4ч', sum:'Республика выиграла право на проведение чемпионата мирового уровня по профессиональным компетенциям.'},
+  {id:8, rid:'tat', title:'Татарстан установил рекорд по объёму экспорта несырьевых товаров', src:'Бизнес Online', t:'news', time:'5ч', sum:'Экспорт составил $3,4 млрд, что на 22% выше показателей аналогичного периода прошлого года.'},
+  {id:9, rid:'svrd', title:'Иннопром-2026 объявил 45 стран-участниц', src:'Midural.ru', t:'gov', time:'3ч 10 мин', sum:'Ключевой партнёр форума — Китай. Площадь выставки увеличена до 70 тыс. кв. метров.'},
+  {id:10,rid:'svrd', title:'Е1.ru: в Екатеринбурге нашли подземный источник питьевой воды', src:'Е1.ру', t:'news', time:'6ч', sum:'Новое месторождение подземных вод выявлено в ходе геологоразведки в Чкаловском районе.'},
+  {id:11,rid:'krd', title:'Сочи: открыт расширенный терминал аэропорта', src:'Администрация КК', t:'gov', time:'2ч 40 мин', sum:'Пропускная способность аэропорта Адлер выросла до 18 млн пассажиров в год.'},
+  {id:12,rid:'nsk', title:'Академгородок 2.0 получил федеральное финансирование 12 млрд ₽', src:'НГС.ру', t:'news', time:'1ч 50 мин', sum:'Средства будут направлены на строительство новых корпусов Академпарка и жилья для учёных.'},
+  {id:13,rid:'krsk', title:'Норникель завершил установку сернокислотного завода в Норильске', src:'NGS24.ru', t:'news', time:'5ч 30 мин', sum:'Проект стоимостью 250 млрд рублей снизит выброс диоксида серы на 90%.'},
+  {id:14,rid:'ykt', title:'В Якутии обнаружено новое месторождение алмазов', src:'СакhaDay', t:'news', time:'7ч', sum:'АЛРОСА подтвердила открытие трубки в Мирнинском районе с запасами более 50 млн карат.'},
+  {id:15,rid:'ros', title:'Ростовский порт нарастил грузооборот на 18% в I кв. 2026', src:'161.ru', t:'news', time:'4ч 20 мин', sum:'Рост достигнут за счёт увеличения транзита зерновых культур и металлопродукции.'},
+  {id:16,rid:'bsh', title:'Уфа вошла в топ-10 городов по качеству городской среды', src:'UFA.ru', t:'news', time:'8ч', sum:'Минстрой России опубликовал ежегодный индекс качества городской среды за 2025 год.'},
+  {id:17,rid:'per', title:'В Перми открылся новый кампус ПГНИУ', src:'59.ru', t:'news', time:'3ч 45 мин', sum:'Корпус вмещает 6 000 студентов и оснащён современным научным оборудованием.'},
+  {id:18,rid:'irk', title:'Байкал: уровень воды восстановился до нормы', src:'ИрСити', t:'news', time:'6ч 10 мин', sum:'После маловодных лет уровень Байкала достиг отметки 456,85 м, близкой к норме.'},
+  {id:19,rid:'chel', title:'ЧМЗ начал производство новых марок специальных сталей', src:'74.ru', t:'news', time:'9ч', sum:'Челябинский металлургический завод освоил выпуск 8 новых марок нержавеющей стали.'},
+  {id:20,rid:'dag', title:'В Дагестане завершилось строительство нового моста через Сулак', src:'РИА Дагестан', t:'news', time:'5ч 55 мин', sum:'Мост протяжённостью 320 метров соединит три населённых пункта Буйнакского района.'},
+  {id:21,rid:'khmao', title:'ХМАО: суммарная добыча нефти превысила 250 млн т в 2025 году', src:'Ugra-news', t:'news', time:'11ч', sum:'Округ удерживает первое место в стране по объёму добычи углеводородов.'},
+  {id:22,rid:'tom', title:'ТГУ вошёл в топ-200 мирового рейтинга университетов QS', src:'Томск.ру', t:'news', time:'12ч', sum:'Томский государственный университет улучшил позиции по показателям научной репутации.'},
+  {id:23,rid:'msk', title:'Столичный бюджет-2026: акцент на экологию и цифровизацию', src:'ТАСС', t:'news', time:'14ч', sum:'Расходы на охрану окружающей среды выросли на 34%, ИТ-инфраструктуру — на 27%.'},
+  {id:24,rid:'spb', title:'Реставрация Эрмитажа: первый этап завершён', src:'Деловой Петербург', t:'news', time:'18ч', sum:'Отреставрированы 14 залов Зимнего дворца. Общий объём работ составил 4,5 млрд рублей.'},
+  {id:25,rid:'kem', title:'В Кузбассе запущена инновационная шахта с автоматизированным управлением', src:'Кузбасс', t:'news', time:'10ч', sum:'Цифровая шахта «Листвяжная-2» управляется дистанционно и снижает риск аварий.'},
+  {id:26,rid:'bur', title:'Байкальская природная территория получит охранный статус ЮНЕСКО', src:'Байкал Медиа', t:'news', time:'16ч', sum:'Решение принято на 46-й сессии Комитета всемирного наследия в Брисбене.'},
+  {id:27,rid:'prm', title:'Владивосток: открылась прямая авиалиния во Вьетнам', src:'VL.ru', t:'news', time:'13ч', sum:'Рейсы по маршруту Владивосток — Хошимин будут выполняться три раза в неделю.'},
+  {id:28,rid:'ynao', title:'В ЯНАО завершена прокладка нового нефтепровода к Сабетте', src:'Красный Север', t:'news', time:'20ч', sum:'Трубопровод протяжённостью 145 км обеспечит нефтепродуктами арктический терминал.'},
+];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+let state = {
+  selRegion: null,
+  selDistrict: null,
+  newsFilter: 'all',
+  searchQuery: '',
+  leftTab: 'districts',
+  rightTab: 'sources',
+};
+
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  tickClock();
+  setInterval(tickClock, 1000);
+  renderDistricts();
+  renderRegionsList();
+  renderMap();
+  renderNewsFeed();
+  renderRightPanel();
+  renderTgFeed();
+  updateStats();
+  document.getElementById('st-upd').textContent =
+    new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+});
+
+function tickClock(){
+  document.getElementById('hclock').textContent =
+    new Date().toLocaleTimeString('ru-RU');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEFT PANEL
+═══════════════════════════════════════════════════════════ */
+function switchLTab(tab, el){
+  state.leftTab = tab;
+  document.querySelectorAll('.lp-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('districts-panel').style.display = tab==='districts'?'block':'none';
+  document.getElementById('regions-panel').style.display  = tab==='regions'?'block':'none';
+}
+
+function renderDistricts(){
+  const el = document.getElementById('districts-panel');
+  el.innerHTML = DISTRICTS.map(d=>{
+    const cnt = REGIONS.filter(r=>r.d===d.id).length;
+    return `<div class="district-btn ${state.selDistrict===d.id?'active':''}"
+      onclick="selDistrict('${d.id}')">
+      <div class="d-swatch" style="background:${d.color}"></div>
+      <span class="d-name">${d.name}</span>
+      <span class="d-count">${cnt}</span>
+    </div>`;
+  }).join('');
+}
+
+function selDistrict(id){
+  state.selDistrict = state.selDistrict===id ? null : id;
+  state.selRegion = null;
+  renderDistricts();
+  renderRegionsList();
+  renderNewsFeed();
+  renderRightPanel();
+  renderMap();
+  document.getElementById('news-title').textContent =
+    state.selDistrict ? DISTRICTS.find(d=>d.id===state.selDistrict)?.name : 'Все регионы';
+}
+
+function renderRegionsList(filter=''){
+  const el = document.getElementById('regions-panel');
+  let list = REGIONS;
+  if(state.selDistrict) list = list.filter(r=>r.d===state.selDistrict);
+  if(filter) list = list.filter(r=>r.name.toLowerCase().includes(filter.toLowerCase()));
+
+  el.innerHTML = DISTRICTS.map(d=>{
+    const dRegs = list.filter(r=>r.d===d.id);
+    if(!dRegs.length) return '';
+    return `<div class="sec-label" style="color:${d.color}88">${d.short}</div>` +
+      dRegs.map(r=>{
+        const cnt = MOCK_NEWS.filter(n=>n.rid===r.id).length;
+        return `<div class="region-btn ${state.selRegion===r.id?'active':''}" onclick="selRegion('${r.id}')">
+          <div class="rb-dot"></div>
+          <span class="rb-name">${r.name}</span>
+          ${cnt?`<span class="rb-news has-news">${cnt}</span>`:
+                `<span class="rb-news">—</span>`}
+        </div>`;
+      }).join('');
+  }).join('');
+}
+
+function filterRegions(q){
+  renderRegionsList(q);
+}
+
+function selRegion(id){
+  state.selRegion = state.selRegion===id ? null : id;
+  state.selDistrict = null;
+  renderDistricts();
+  renderRegionsList();
+  renderNewsFeed();
+  renderRightPanel();
+  renderMap();
+  const r = REGIONS.find(x=>x.id===id);
+  document.getElementById('news-title').textContent = r ? r.name : 'Все регионы';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAP
+═══════════════════════════════════════════════════════════ */
+function getDistrictColor(did){
+  return DISTRICTS.find(d=>d.id===did)?.color || '#3b82f6';
+}
+
+function renderMap(){
+  const g = document.getElementById('map-g');
+  const hasNews = new Set(MOCK_NEWS.map(n=>n.rid));
+  g.innerHTML = REGIONS.map(r=>{
+    const isSel = state.selRegion===r.id;
+    const isDistSel = state.selDistrict===r.d;
+    const hasN = hasNews.has(r.id);
+    const dc = getDistrictColor(r.d);
+    let fill = '#12213a';
+    if(isSel) fill='#1d4ed8';
+    else if(isDistSel) fill='#1e3d7a';
+    else if(hasN) fill='#16305a';
+    const stroke = isSel ? '#60a5fa' : isDistSel ? '#3b7de0' : '#1e3050';
+    const sw = isSel ? .8 : isDistSel ? .5 : .3;
+    const x=r.cx-r.w/2, y=r.cy-r.h/2;
+    const srcCount = (REGION_SOURCES[r.id]||[]).length;
+    return `<g data-rid="${r.id}">
+      <rect x="${x}" y="${y}" width="${r.w}" height="${r.h}" rx="2"
+        fill="${fill}" stroke="${stroke}" stroke-width="${sw}"
+        class="map-region ${isSel?'mr-active':''} ${hasN?'mr-hasnews':''}"
+        onmouseenter="showTT(event,'${r.id}')"
+        onmouseleave="hideTT()"
+        onclick="selRegion('${r.id}')"
+      />
+      ${r.w>=24?`<text x="${r.cx}" y="${r.cy+3}" text-anchor="middle"
+        font-size="${r.w>=50?8:7}" fill="${isSel?'#93c5fd':'#4a6080'}"
+        pointer-events="none" font-family="Golos Text,sans-serif"
+        >${r.name.split(' ')[0].slice(0,9)}</text>`:''}
+    </g>`;
+  }).join('');
+}
+
+function mapMode(m, btn){
+  document.querySelectorAll('.mc-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showTT(e, rid){
+  const r = REGIONS.find(x=>x.id===rid);
+  if(!r) return;
+  const d = DISTRICTS.find(x=>x.id===r.d);
+  const cnt = MOCK_NEWS.filter(n=>n.rid===rid).length;
+  const srcs = (REGION_SOURCES[rid]||[]).length;
+  const tt = document.getElementById('mtooltip');
+  document.getElementById('mtt-name').textContent = r.name;
+  document.getElementById('mtt-district').textContent = d?.name||'';
+  document.getElementById('mtt-sources').textContent =
+    `${srcs} источников · ${cnt} новостей за 24ч`;
+  const svg = document.getElementById('map-svg');
+  const rect = svg.getBoundingClientRect();
+  let lx = e.clientX - rect.left + 12;
+  let ly = e.clientY - rect.top - 8;
+  if(lx+200>rect.width) lx -= 210;
+  tt.style.left = lx+'px';
+  tt.style.top  = ly+'px';
+  tt.style.display = 'block';
+}
+function hideTT(){ document.getElementById('mtooltip').style.display='none'; }
+
+/* ═══════════════════════════════════════════════════════════
+   NEWS FEED
+═══════════════════════════════════════════════════════════ */
+function setNFilter(f, btn){
+  state.newsFilter = f;
+  document.querySelectorAll('.nf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderNewsFeed();
+}
+
+function highlight(text, query){
+  if(!query) return text;
+  const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+function renderNewsFeed(){
+  const el = document.getElementById('news-list');
+  const q = state.searchQuery.toLowerCase().trim();
+
+  let news = [...MOCK_NEWS];
+
+  // region/district filter
+  if(state.selRegion){
+    news = news.filter(n=>n.rid===state.selRegion);
+  } else if(state.selDistrict){
+    const ids = new Set(REGIONS.filter(r=>r.d===state.selDistrict).map(r=>r.id));
+    news = news.filter(n=>ids.has(n.rid));
+  }
+
+  // type filter
+  if(state.newsFilter!=='all'){
+    news = news.filter(n=>n.t===state.newsFilter);
+  }
+
+  // keyword search
+  if(q){
+    news = news.map(n=>{
+      const inTitle   = n.title.toLowerCase().includes(q);
+      const inSummary = n.sum.toLowerCase().includes(q);
+      const inSource  = n.src.toLowerCase().includes(q);
+      const inRegion  = (REGIONS.find(r=>r.id===n.rid)?.name||'').toLowerCase().includes(q);
+      return {...n, _match: inTitle||inSummary||inSource||inRegion};
+    });
+    // sort matches first
+    news.sort((a,b)=>(b._match?1:0)-(a._match?1:0));
+  }
+
+  if(!news.length){
+    el.innerHTML = `<div class="empty-feed"><div class="empty-icon">📭</div>Нет новостей по фильтру</div>`;
+    return;
+  }
+
+  const matchCount = q ? news.filter(n=>n._match).length : news.length;
+  if(q){
+    document.getElementById('sq-label').textContent = `«${state.searchQuery}»`;
+    document.getElementById('search-stats').textContent =
+      `${matchCount} совпадений из ${MOCK_NEWS.length}`;
+  }
+
+  el.innerHTML = news.map(n=>{
+    const region = REGIONS.find(r=>r.id===n.rid);
+    const isHidden = q && !n._match;
+    const badgeMap = {news:'nb-news СМИ', tg:'nb-tg Telegram', gov:'nb-gov Гос.орган', rss:'nb-rss RSS'};
+    const [bc, bt] = (badgeMap[n.t]||'nb-news СМИ').split(' ');
+    const titleHl  = q ? highlight(n.title, state.searchQuery) : n.title;
+    const sumHl    = q ? highlight(n.sum,   state.searchQuery) : n.sum;
+    const rss = (REGION_SOURCES[n.rid]||[]).find(s=>s.n===n.src);
+    return `<div class="ncard type-${n.t} ${q&&n._match?'search-match':''} ${isHidden?'search-hidden':''}">
+      <div class="nc-top">
+        <span class="nc-badge ${bc}">${bt}</span>
+        <span class="nc-source">${n.src}</span>
+        ${region?`<span class="nc-region">${region.name}</span>`:''}
+        <span class="nc-time">${n.time} назад</span>
+      </div>
+      <div class="nc-title">${titleHl}</div>
+      <div class="nc-summary">${sumHl}</div>
+      ${rss?`<div class="nc-rss-url">📡 RSS: <a href="${rss.u}" target="_blank">${rss.u.replace('https://','')}</a></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════════════════ */
+let searchTimer = null;
+
+function onGlobalSearch(val){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    state.searchQuery = val.trim();
+    document.getElementById('sclear').style.display = val ? 'block' : 'none';
+
+    const bar = document.getElementById('search-bar');
+    if(val.trim()){
+      bar.classList.add('visible');
+      document.getElementById('sq-label').textContent = `«${val.trim()}»`;
+    } else {
+      bar.classList.remove('visible');
+    }
+
+    // update active tag
+    document.querySelectorAll('.stag').forEach(t=>{
+      t.classList.toggle('active', t.textContent===val.trim());
+    });
+
+    renderNewsFeed();
+  }, 180);
+}
+
+function onSearchKey(e){
+  if(e.key==='Escape') clearSearch();
+}
+
+function quickSearch(term){
+  const inp = document.getElementById('gsearch');
+  inp.value = term;
+  onGlobalSearch(term);
+}
+
+function clearSearch(){
+  const inp = document.getElementById('gsearch');
+  inp.value = '';
+  state.searchQuery = '';
+  document.getElementById('sclear').style.display='none';
+  document.getElementById('search-bar').classList.remove('visible');
+  document.querySelectorAll('.stag').forEach(t=>t.classList.remove('active'));
+  renderNewsFeed();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RIGHT PANEL
+═══════════════════════════════════════════════════════════ */
+function switchRTab(tab, el){
+  state.rightTab = tab;
+  document.querySelectorAll('.rp-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.rp-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('rp-'+tab).classList.add('active');
+}
+
+function renderRightPanel(){
+  const el = document.getElementById('rp-sources');
+
+  // if region selected, show its sources
+  if(state.selRegion){
+    const r = REGIONS.find(x=>x.id===state.selRegion);
+    const srcs = REGION_SOURCES[state.selRegion]||[];
+    const byType = {news:[], tg:[], gov:[]};
+    srcs.forEach(s=>{ if(byType[s.t]) byType[s.t].push(s); });
+
+    el.innerHTML = `<div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;margin-bottom:2px">${r.name}</div>
+      <div style="font-size:10px;color:var(--muted2)">${srcs.length} источников в регионе</div>
+    </div>` + renderSourceGroup('📰 СМИ', byType.news, 'news')
+             + renderSourceGroup('🏛 Госорганы', byType.gov, 'gov')
+             + renderSourceGroup('✈️ Telegram', byType.tg, 'tg')
+             + renderFederalGroups();
+    return;
+  }
+
+  el.innerHTML = renderFederalGroups();
+  initToggles();
+}
+
+function renderSourceGroup(label, items, type){
+  if(!items.length) return '';
+  const icons = {news:'📰',tg:'✈️',gov:'🏛'};
+  const iclass = {news:'rei-news',tg:'rei-tg',gov:'rei-gov'};
+  return `<div class="rss-group open">
+    <div class="rss-group-head" onclick="this.parentElement.classList.toggle('open')">
+      <span class="rgh-icon">${icons[type]||'📡'}</span>
+      <span class="rgh-name">${label}</span>
+      <span class="rgh-count">${items.length}</span>
+      <span class="rgh-arrow">›</span>
+    </div>
+    <div class="rss-group-body">
+      ${items.map(s=>{
+        const url = s.u || (s.ch ? `https://t.me/${s.ch.replace('@','')}` : '#');
+        return `<div class="rss-entry" onclick="window.open('${url}','_blank')">
+          <div class="re-icon ${iclass[type]}">${icons[type]}</div>
+          <div class="re-info">
+            <div class="re-name">${s.n}</div>
+            <div class="re-sub">${s.ch||s.u?.replace('https://','').split('/')[0]||''}</div>
+          </div>
+          <div class="re-toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderFederalGroups(){
+  const smi = FEDERAL_SOURCES.smi.map(s=>({n:s.n,t:'news',u:s.u}));
+  const gov = FEDERAL_SOURCES.gov.map(s=>({n:s.n,t:'gov',u:s.u}));
+  const tg  = FEDERAL_SOURCES.tg.map(s=>({n:s.n,t:'tg',ch:s.ch}));
+  return `<div style="padding:8px 14px 4px;font-size:9px;letter-spacing:.8px;color:var(--muted2);text-transform:uppercase">Федеральные</div>`
+    + renderSourceGroup('📰 Федеральные СМИ', smi, 'news')
+    + renderSourceGroup('🏛 Госведомства РФ', gov, 'gov')
+    + renderSourceGroup('✈️ Telegram-каналы', tg, 'tg');
+}
+
+function initToggles(){} // toggles init via inline onclick
+
+function renderTgFeed(){
+  const items = [
+    {ch:'@russica2',   text:'Тема инфляции в регионах обострилась. Губернаторы ЦФО обсуждают механизмы сдерживания цен на продукты питания.', t:'38 мин'},
+    {ch:'@readovkanews',text:'МЧС: паводок в Оренбургской и Самарской областях выходит на пик. Эвакуировано свыше 12 000 жителей.', t:'1ч 10 мин'},
+    {ch:'@breakingmash',text:'В Норильске зафиксирована утечка топлива в реку. Местная администрация ввела режим ЧС.', t:'2ч 05 мин'},
+    {ch:'@bazabazon',  text:'В Якутии пропала экспедиция геологов — 6 человек. МЧС развернуло поисково-спасательную операцию.', t:'3ч 22 мин'},
+    {ch:'@governorsofrussia', text:'Губернаторы 12 регионов получили выговор за срыв сроков нацпроектов. Президент провёл закрытое совещание.', t:'4ч'},
+    {ch:'@regiopolit', text:'Новые назначения ВРИО: в трёх регионах сменились главы. Источник называет их «технократами нового призыва».', t:'5ч 15 мин'},
+    {ch:'@vchkogpu',   text:'Задержан глава районного муниципалитета в Краснодарском крае. Подозрение в хищении средств ЖКХ.', t:'6ч 40 мин'},
+  ];
+  document.getElementById('tg-feed-items').innerHTML = items.map(i=>
+    `<div class="tgl-item">
+      <div class="tgl-ch">${i.ch}</div>
+      <div class="tgl-text">${i.text}</div>
+      <div class="tgl-meta">${i.t} назад</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════════════ */
+function updateStats(){
+  let totalSrcs = FEDERAL_SOURCES.smi.length + FEDERAL_SOURCES.gov.length + FEDERAL_SOURCES.tg.length;
+  Object.values(REGION_SOURCES).forEach(arr=>{ totalSrcs += arr.length; });
+  document.getElementById('st-news').textContent = MOCK_NEWS.length + '+';
+  document.getElementById('st-src').textContent  = totalSrcs + '+';
+}
+</script>
+</body>
+</html>
