@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регионы России — Новостной дашборд</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1a2236;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --accent3: #1d4ed8;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --muted2: #64748b;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --card-r: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Golos Text', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,0.12), transparent),
+              radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16,185,129,0.06), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* HEADER */
+header {
+  position: relative;
+  z-index: 10;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10,14,26,0.9);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+}
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-flag { font-size: 22px; }
+.logo-sub { font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0.5px; display: block; margin-top: 2px; }
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #10b981;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+#clock { font-variant-numeric: tabular-nums; }
+
+/* LAYOUT */
+.app {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr 340px;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 65px);
+  overflow: hidden;
+}
+
+/* SIDEBAR LEFT */
+.sidebar-left {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--bg2);
+}
+.sidebar-left::-webkit-scrollbar { width: 4px; }
+.sidebar-left::-webkit-scrollbar-track { background: transparent; }
+.sidebar-left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* SEARCH */
+.search-box {
+  position: relative;
+  margin-bottom: 0;
+}
+.search-box input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px 8px 36px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box input::placeholder { color: var(--muted2); }
+.search-icon {
+  position: absolute;
+  left: 11px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted2);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* FEDERAL DISTRICTS */
+.district-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+}
+.district-item:hover, .district-item.active {
+  background: rgba(59,130,246,0.1);
+}
+.district-item.active { border: 1px solid rgba(59,130,246,0.3); }
+.district-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.district-name { font-size: 13px; flex: 1; }
+.district-count {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg3);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* REGIONS LIST */
+.region-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
+}
+.region-item:hover { background: var(--bg3); }
+.region-item.selected {
+  background: rgba(59,130,246,0.15);
+  color: var(--accent2);
+}
+.region-item-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--muted2);
+  flex-shrink: 0;
+}
+.region-item.selected .region-item-dot { background: var(--accent); }
+.region-news-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+/* CENTER — MAP + NEWS */
+.center-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* MAP */
+.map-container {
+  position: relative;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 340px;
+  overflow: hidden;
+}
+#russia-svg {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+#russia-svg:active { cursor: grabbing; }
+.map-region {
+  fill: #1e2d45;
+  stroke: #2d3f5a;
+  stroke-width: 0.5;
+  transition: fill 0.2s;
+  cursor: pointer;
+}
+.map-region:hover { fill: #2a4a7a; }
+.map-region.selected { fill: #1d4ed8; stroke: #60a5fa; stroke-width: 1; }
+.map-region.has-news { fill: #1a3a5c; }
+.map-region.hot-news { fill: #2d3a1e; }
+
+.map-overlay {
+  position: absolute;
+  top: 12px; left: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.map-btn {
+  background: rgba(17,24,39,0.85);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.15s;
+}
+.map-btn:hover, .map-btn.active { background: var(--accent3); border-color: var(--accent); }
+
+.map-legend {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  background: rgba(17,24,39,0.9);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  backdrop-filter: blur(8px);
+}
+.legend-row {
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 5px; color: var(--muted);
+}
+.legend-row:last-child { margin-bottom: 0; }
+.legend-swatch {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* TOOLTIP */
+#map-tooltip {
+  position: absolute;
+  background: rgba(17,24,39,0.95);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  pointer-events: none;
+  display: none;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  max-width: 200px;
+}
+#map-tooltip .tt-name { font-weight: 600; margin-bottom: 3px; }
+#map-tooltip .tt-count { color: var(--muted); }
+
+/* NEWS FEED */
+.news-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.news-feed::-webkit-scrollbar { width: 4px; }
+.news-feed::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.feed-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+.feed-filters {
+  display: flex;
+  gap: 6px;
+}
+.filter-btn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: var(--accent3);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.news-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--card-r);
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.news-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.news-card:hover { border-color: var(--border2); transform: translateX(2px); }
+.news-card:hover::before { opacity: 1; }
+.news-card.tg { }
+.news-card.tg::before { background: #2ea6ff; }
+.news-card.gov::before { background: var(--green); }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+.source-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.badge-news { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.badge-tg { background: rgba(46,166,255,0.15); color: #7dd3fc; }
+.badge-gov { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+.badge-rss { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+.card-source-name { font-size: 11px; color: var(--muted); }
+.card-time { font-size: 11px; color: var(--muted2); margin-left: auto; }
+.card-region-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+}
+.card-title { font-size: 14px; font-weight: 500; line-height: 1.5; margin-bottom: 6px; }
+.card-summary { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.card-link {
+  font-size: 11px;
+  color: var(--accent2);
+  text-decoration: none;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.card-link:hover { text-decoration: underline; }
+
+.loading-msg {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SIDEBAR RIGHT */
+.sidebar-right {
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-right::-webkit-scrollbar { width: 4px; }
+.sidebar-right::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* RSS PANEL */
+.rss-section { padding: 16px; border-bottom: 1px solid var(--border); }
+.rss-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.rss-icon { font-size: 12px; }
+
+.rss-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  margin-bottom: 3px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.rss-item:hover { background: var(--bg3); }
+.rss-item-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.rss-item-icon {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.icon-news { background: rgba(59,130,246,0.2); }
+.icon-tg { background: rgba(46,166,255,0.2); }
+.icon-gov { background: rgba(16,185,129,0.2); }
+.rss-item-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rss-item-region { font-size: 10px; color: var(--muted2); }
+.rss-toggle {
+  width: 28px; height: 16px;
+  background: var(--bg3);
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.rss-toggle.on { background: var(--accent3); border-color: var(--accent); }
+.rss-toggle::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  top: 2px; left: 2px;
+  transition: all 0.2s;
+}
+.rss-toggle.on::after { left: 14px; background: white; }
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.stat-card {
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.stat-label { font-size: 10px; color: var(--muted2); margin-bottom: 4px; }
+.stat-value { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 600; }
+.stat-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.stat-up { color: var(--green); }
+.stat-down { color: var(--red); }
+
+/* TG FEED */
+.tg-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tg-item:hover { background: var(--bg3); }
+.tg-channel { color: #2ea6ff; font-weight: 500; margin-bottom: 4px; font-size: 11px; }
+.tg-text { color: var(--text); line-height: 1.5; margin-bottom: 4px; }
+.tg-meta { color: var(--muted2); font-size: 10px; }
+
+/* EMPTY */
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 260px 1fr; }
+  .sidebar-right { display: none; }
+}
+@media (max-width: 768px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar-left { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-flag">🇷🇺</span>
+    <div>
+      Россия · Регионы
+      <span class="logo-sub">Новостной мониторинг</span>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="live-badge"><div class="live-dot"></div>В эфире</div>
+    <span id="clock">--:--:--</span>
+    <span id="date-display"></span>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR LEFT -->
+  <div class="sidebar-left">
+    <div class="sidebar-section">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="region-search" placeholder="Поиск региона..." oninput="filterRegions(this.value)">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Федеральные округа</div>
+      <div id="districts-list"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Регионы</div>
+      <div id="regions-list"></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center-pane">
+    <!-- MAP -->
+    <div class="map-container">
+      <div class="map-overlay">
+        <button class="map-btn active" onclick="setMapMode('all')">Все регионы</button>
+        <button class="map-btn" onclick="setMapMode('active')">С новостями</button>
+        <button class="map-btn" onclick="setMapMode('gov')">Госведомства</button>
+      </div>
+
+      <svg id="russia-svg" viewBox="0 0 1000 580" xmlns="http://www.w3.org/2000/svg">
+        <!-- Simplified Russia map regions as groups -->
+        <g id="map-regions"></g>
+      </svg>
+
+      <div id="map-tooltip">
+        <div class="tt-name" id="tt-name"></div>
+        <div class="tt-count" id="tt-count"></div>
+      </div>
+
+      <div class="map-legend">
+        <div class="legend-row"><div class="legend-swatch" style="background:#1e2d45"></div>Нет данных</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#1a3a5c"></div>Есть новости</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#1d4ed8"></div>Выбран</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#1a3a1e"></div>Активный</div>
+      </div>
+    </div>
+
+    <!-- NEWS FEED -->
+    <div class="news-feed">
+      <div class="feed-header">
+        <div class="feed-title" id="feed-title">Все регионы</div>
+        <div class="feed-filters">
+          <button class="filter-btn active" onclick="setFilter('all', this)">Все</button>
+          <button class="filter-btn" onclick="setFilter('news', this)">СМИ</button>
+          <button class="filter-btn" onclick="setFilter('tg', this)">Telegram</button>
+          <button class="filter-btn" onclick="setFilter('gov', this)">Гос</button>
+        </div>
+      </div>
+      <div id="news-container">
+        <div class="loading-msg"><div class="spinner"></div>Загрузка новостей...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR RIGHT -->
+  <div class="sidebar-right">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Новостей за 24ч</div>
+        <div class="stat-value" id="total-news">—</div>
+        <div class="stat-sub">по всем регионам</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Активных каналов</div>
+        <div class="stat-value" id="active-sources">—</div>
+        <div class="stat-sub stat-up">RSS + TG</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Регионов</div>
+        <div class="stat-value">85</div>
+        <div class="stat-sub">субъектов РФ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Обновлено</div>
+        <div class="stat-value" id="update-time" style="font-size:12px;margin-top:2px">—</div>
+        <div class="stat-sub">авто каждые 5 мин</div>
+      </div>
+    </div>
+
+    <div class="rss-section">
+      <div class="rss-title"><span class="rss-icon">📡</span>Федеральные СМИ</div>
+      <div id="federal-rss"></div>
+    </div>
+
+    <div class="rss-section">
+      <div class="rss-title"><span class="rss-icon">🏛</span>Госведомства</div>
+      <div id="gov-rss"></div>
+    </div>
+
+    <div class="rss-section">
+      <div class="rss-title"><span class="rss-icon">✈️</span>Telegram-каналы</div>
+      <div id="tg-channels"></div>
+    </div>
+
+    <div style="padding:16px; border-bottom:1px solid var(--border);">
+      <div class="rss-title">⚡ Telegram-лента</div>
+      <div id="tg-feed"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const DISTRICTS = [
+  { id:'cfo', name:'Центральный', color:'#3b82f6', regions:18 },
+  { id:'szfo', name:'Северо-Западный', color:'#10b981', regions:11 },
+  { id:'skfo', name:'Северо-Кавказский', color:'#f59e0b', regions:7 },
+  { id:'yfo', name:'Южный', color:'#ef4444', regions:8 },
+  { id:'pfo', name:'Приволжский', color:'#8b5cf6', regions:14 },
+  { id:'ufo', name:'Уральский', color:'#06b6d4', regions:6 },
+  { id:'sfo', name:'Сибирский', color:'#ec4899', regions:10 },
+  { id:'dfo', name:'Дальневосточный', color:'#f97316', regions:11 },
+];
+
+const REGIONS = [
+  // ЦФО
+  { id:'msk', name:'Москва', district:'cfo', code:77 },
+  { id:'mo', name:'Московская область', district:'cfo', code:50 },
+  { id:'bel', name:'Белгородская область', district:'cfo', code:31 },
+  { id:'bry', name:'Брянская область', district:'cfo', code:32 },
+  { id:'vla', name:'Владимирская область', district:'cfo', code:33 },
+  { id:'vor', name:'Воронежская область', district:'cfo', code:36 },
+  { id:'iva', name:'Ивановская область', district:'cfo', code:37 },
+  { id:'klu', name:'Калужская область', district:'cfo', code:40 },
+  { id:'kos', name:'Костромская область', district:'cfo', code:44 },
+  { id:'kur', name:'Курская область', district:'cfo', code:46 },
+  { id:'lip', name:'Липецкая область', district:'cfo', code:48 },
+  { id:'orl', name:'Орловская область', district:'cfo', code:57 },
+  { id:'ryz', name:'Рязанская область', district:'cfo', code:62 },
+  { id:'sml', name:'Смоленская область', district:'cfo', code:67 },
+  { id:'tam', name:'Тамбовская область', district:'cfo', code:68 },
+  { id:'tve', name:'Тверская область', district:'cfo', code:69 },
+  { id:'tul', name:'Тульская область', district:'cfo', code:71 },
+  { id:'yar', name:'Ярославская область', district:'cfo', code:76 },
+  // СЗФО
+  { id:'spb', name:'Санкт-Петербург', district:'szfo', code:78 },
+  { id:'len', name:'Ленинградская область', district:'szfo', code:47 },
+  { id:'arc', name:'Архангельская область', district:'szfo', code:29 },
+  { id:'vlo', name:'Вологодская область', district:'szfo', code:35 },
+  { id:'kal', name:'Калининградская область', district:'szfo', code:39 },
+  { id:'kar', name:'Республика Карелия', district:'szfo', code:10 },
+  { id:'kom', name:'Республика Коми', district:'szfo', code:11 },
+  { id:'mur', name:'Мурманская область', district:'szfo', code:51 },
+  { id:'nov', name:'Новгородская область', district:'szfo', code:53 },
+  { id:'psk', name:'Псковская область', district:'szfo', code:60 },
+  { id:'nen', name:'НАО', district:'szfo', code:83 },
+  // СКФО
+  { id:'dag', name:'Республика Дагестан', district:'skfo', code:5 },
+  { id:'ing', name:'Республика Ингушетия', district:'skfo', code:6 },
+  { id:'kbr', name:'Кабардино-Балкария', district:'skfo', code:7 },
+  { id:'kch', name:'Карачаево-Черкессия', district:'skfo', code:9 },
+  { id:'noo', name:'Северная Осетия', district:'skfo', code:15 },
+  { id:'che', name:'Чечня', district:'skfo', code:20 },
+  { id:'stv', name:'Ставропольский край', district:'skfo', code:26 },
+  // ЮФО
+  { id:'krd', name:'Краснодарский край', district:'yfo', code:23 },
+  { id:'ady', name:'Республика Адыгея', district:'yfo', code:1 },
+  { id:'klm', name:'Республика Калмыкия', district:'yfo', code:8 },
+  { id:'cry', name:'Республика Крым', district:'yfo', code:91 },
+  { id:'ast', name:'Астраханская область', district:'yfo', code:30 },
+  { id:'vol', name:'Волгоградская область', district:'yfo', code:34 },
+  { id:'ros', name:'Ростовская область', district:'yfo', code:61 },
+  { id:'sev', name:'Севастополь', district:'yfo', code:92 },
+  // ПФО
+  { id:'nnv', name:'Нижегородская область', district:'pfo', code:52 },
+  { id:'tat', name:'Республика Татарстан', district:'pfo', code:16 },
+  { id:'bsh', name:'Республика Башкортостан', district:'pfo', code:2 },
+  { id:'chu', name:'Чувашия', district:'pfo', code:21 },
+  { id:'mrd', name:'Республика Мордовия', district:'pfo', code:13 },
+  { id:'mri', name:'Республика Марий Эл', district:'pfo', code:12 },
+  { id:'udr', name:'Удмуртия', district:'pfo', code:18 },
+  { id:'per', name:'Пермский край', district:'pfo', code:59 },
+  { id:'kir', name:'Кировская область', district:'pfo', code:43 },
+  { id:'ore', name:'Оренбургская область', district:'pfo', code:56 },
+  { id:'pen', name:'Пензенская область', district:'pfo', code:58 },
+  { id:'sam', name:'Самарская область', district:'pfo', code:63 },
+  { id:'sar', name:'Саратовская область', district:'pfo', code:64 },
+  { id:'ulv', name:'Ульяновская область', district:'pfo', code:73 },
+  // УФО
+  { id:'ekb', name:'Свердловская область', district:'ufo', code:66 },
+  { id:'che2', name:'Челябинская область', district:'ufo', code:74 },
+  { id:'tum', name:'Тюменская область', district:'ufo', code:72 },
+  { id:'kgn', name:'Курганская область', district:'ufo', code:45 },
+  { id:'khmao', name:'ХМАО-Югра', district:'ufo', code:86 },
+  { id:'ynao', name:'ЯНАО', district:'ufo', code:89 },
+  // СФО
+  { id:'nsk', name:'Новосибирская область', district:'sfo', code:54 },
+  { id:'krk', name:'Красноярский край', district:'sfo', code:24 },
+  { id:'irk', name:'Иркутская область', district:'sfo', code:38 },
+  { id:'omsk', name:'Омская область', district:'sfo', code:55 },
+  { id:'tom', name:'Томская область', district:'sfo', code:70 },
+  { id:'keme', name:'Кемеровская область', district:'sfo', code:42 },
+  { id:'alt', name:'Алтайский край', district:'sfo', code:22 },
+  { id:'altR', name:'Республика Алтай', district:'sfo', code:4 },
+  { id:'tuv', name:'Республика Тыва', district:'sfo', code:17 },
+  { id:'kha', name:'Республика Хакасия', district:'sfo', code:19 },
+  // ДФО
+  { id:'ykt', name:'Якутия', district:'dfo', code:14 },
+  { id:'khb', name:'Хабаровский край', district:'dfo', code:27 },
+  { id:'pri', name:'Приморский край', district:'dfo', code:25 },
+  { id:'amr', name:'Амурская область', district:'dfo', code:28 },
+  { id:'sak', name:'Сахалинская область', district:'dfo', code:65 },
+  { id:'kam', name:'Камчатский край', district:'dfo', code:41 },
+  { id:'mag', name:'Магаданская область', district:'dfo', code:49 },
+  { id:'eao', name:'ЕАО', district:'dfo', code:79 },
+  { id:'chu2', name:'Чукотский АО', district:'dfo', code:87 },
+  { id:'bur', name:'Республика Бурятия', district:'dfo', code:3 },
+  { id:'zab', name:'Забайкальский край', district:'dfo', code:75 },
+];
+
+const RSS_SOURCES = {
+  federal: [
+    { name:'ТАСС', url:'https://tass.ru/rss/v2.xml', type:'news' },
+    { name:'РИА Новости', url:'https://ria.ru/export/rss2/archive/index.xml', type:'news' },
+    { name:'Коммерсант', url:'https://www.kommersant.ru/RSS/main.xml', type:'news' },
+    { name:'Известия', url:'https://iz.ru/xml/rss/all.xml', type:'news' },
+    { name:'Интерфакс', url:'https://www.interfax.ru/rss.asp', type:'news' },
+    { name:'Российская газета', url:'https://rg.ru/xml/index.xml', type:'news' },
+  ],
+  gov: [
+    { name:'Kremlin.ru', url:'http://kremlin.ru/events/all/feed', type:'gov' },
+    { name:'Правительство РФ', url:'http://government.ru/all/rss/', type:'gov' },
+    { name:'Минэкономики', url:'https://economy.gov.ru/material/rss.xml', type:'gov' },
+    { name:'Минфин', url:'https://minfin.gov.ru/ru/press-center/rss/', type:'gov' },
+    { name:'Минздрав', url:'https://minzdrav.gov.ru/news/feed', type:'gov' },
+    { name:'Минтранс', url:'https://mintrans.gov.ru/press-center/rss', type:'gov' },
+    { name:'Роспотребнадзор', url:'https://rospotrebnadzor.ru/rss', type:'gov' },
+    { name:'Росстат', url:'https://rosstat.gov.ru/rss', type:'gov' },
+  ],
+  tg: [
+    { name:'ВЧК-ОГПУ', channel:'@vchkogpu', region:'Федеральный', type:'tg' },
+    { name:'Readovka', channel:'@readovkanews', region:'Федеральный', type:'tg' },
+    { name:'НЕЗЫГАРЬ', channel:'@russica2', region:'Федеральный', type:'tg' },
+    { name:'Baza', channel:'@bazabazon', region:'Федеральный', type:'tg' },
+    { name:'Mash', channel:'@breakingmash', region:'Федеральный', type:'tg' },
+    { name:'Е-область', channel:'@eoblast', region:'Свердловская', type:'tg' },
+    { name:'Подъём', channel:'@podyom', region:'Красноярск', type:'tg' },
+    { name:'Татарстан 24', channel:'@tatarstan24', region:'Татарстан', type:'tg' },
+    { name:'Юг.ру', channel:'@yugru', region:'Краснодар', type:'tg' },
+    { name:'Говорит Москва', channel:'@govoritmsk', region:'Москва', type:'tg' },
+    { name:'Питер Online', channel:'@piterofficial', region:'СПб', type:'tg' },
+    { name:'НовосибирскОнлайн', channel:'@novosibirsk_online', region:'Новосибирск', type:'tg' },
+  ]
+};
+
+// Regional media RSS (sample)
+const REGIONAL_RSS = {
+  msk: [
+    { name:'Mos.ru', url:'https://www.mos.ru/news/rss.xml', type:'gov' },
+    { name:'M24', url:'https://www.m24.ru/rss.xml', type:'news' },
+  ],
+  spb: [
+    { name:'gov.spb.ru', url:'https://www.gov.spb.ru/rss/', type:'gov' },
+    { name:'Фонтанка.ру', url:'https://www.fontanka.ru/fontanka.rss', type:'news' },
+  ],
+  nsk: [
+    { name:'NSK.ru', url:'https://nsk.ru/rss', type:'news' },
+    { name:'Правительство НСО', url:'https://www.nso.ru/rss', type:'gov' },
+  ],
+  ekb: [
+    { name:'Е1.ру', url:'https://www.e1.ru/export/rss.xml', type:'news' },
+    { name:'Midural.ru', url:'https://midural.ru/rss', type:'gov' },
+  ],
+  krd: [
+    { name:'НГ-Кубань', url:'https://ngkuban.ru/rss', type:'news' },
+    { name:'Администрация КК', url:'https://admkrai.krasnodar.ru/rss', type:'gov' },
+  ],
+  krk: [
+    { name:'NGS24.ru', url:'https://ngs24.ru/rss/all', type:'news' },
+    { name:'Красноярский край', url:'https://www.krskstate.ru/rss', type:'gov' },
+  ],
+};
+
+// Simulated news data for demonstration
+const MOCK_NEWS = [
+  { region:'msk', title:'Мэр Москвы открыл новую станцию метро на БКЛ', source:'Mos.ru', type:'gov', time:'2ч назад', summary:'Станция Аминьевская открылась в рамках развития Большой Кольцевой линии московского метрополитена.' },
+  { region:'msk', title:'В Москве прошли переговоры по торгово-экономическому сотрудничеству', source:'ТАСС', type:'news', time:'3ч назад', summary:'Встреча прошла в Доме Правительства при участии представителей деловых кругов.' },
+  { region:'msk', title:'Обновление транспортной схемы в центре столицы', source:'M24', type:'news', time:'5ч назад', summary:'С 10 апреля вводятся изменения в маршрутную сеть наземного общественного транспорта.' },
+  { region:'spb', title:'Петербург привлёк рекордный объём инвестиций в I квартале', source:'gov.spb.ru', type:'gov', time:'1ч назад', summary:'По данным Комитета по инвестициям, объём привлечённых инвестиций составил более 250 млрд рублей.' },
+  { region:'spb', title:'На Дворцовой площади состоится концерт в честь юбилея города', source:'Фонтанка.ру', type:'news', time:'4ч назад', summary:'Торжественное мероприятие планируется провести 27 мая с участием ведущих артистов страны.' },
+  { region:'nsk', title:'Новосибирская область вошла в топ-5 по темпам развития АПК', source:'Правительство НСО', type:'gov', time:'2ч назад', summary:'По итогам 2025 года регион показал прирост сельхозпроизводства на 12%.' },
+  { region:'ekb', title:'Иннопром-2026: Свердловская область готовится к форуму', source:'Midural.ru', type:'gov', time:'3ч назад', summary:'В регионе разворачивается подготовка к международной промышленной выставке.' },
+  { region:'krd', title:'В Краснодаре введён новый жилой комплекс', source:'НГ-Кубань', type:'news', time:'6ч назад', summary:'Заселение первых 500 квартир началось в Прикубанском округе краевой столицы.' },
+  { region:'krk', title:'Норникель анонсировал экологическую программу для Норильска', source:'NGS24.ru', type:'news', time:'4ч назад', summary:'Инвестиции в снижение выбросов серы составят 330 млрд рублей до 2030 года.' },
+  { region:'tat', title:'Казань примет международный форум IT-специалистов', source:'ТАСС', type:'news', time:'5ч назад', summary:'Форум Kazan Digital Week соберёт участников из 40 стран в сентябре.' },
+  { region:'msk', title:'Лента: Губернаторы обсуждают интеграцию ИИ в госуправление', source:'@nezygari', type:'tg', time:'1ч назад', summary:'Пилотный проект по внедрению ИИ-ассистентов в 12 регионах стартует в мае.' },
+  { region:'spb', title:'Лента: Городской транспорт Петербурга переходит на новые карты', source:'@piterofficial', type:'tg', time:'2ч назад', summary:'Система «Подорожник» обновляется: старые карты действуют до 1 июня.' },
+  { region:'nnv', title:'Нижегородская область: рост промышленного производства 8,3%', source:'Правительство НО', type:'gov', time:'7ч назад', summary:'Автомобилестроение и оборонный комплекс показали наибольшую динамику.' },
+  { region:'ros', title:'В Ростове-на-Дону открылся крупный логистический хаб', source:'Юг.ру', type:'news', time:'3ч назад', summary:'Комплекс площадью 120 тыс. м² обслуживает грузопотоки Юга России.' },
+  { region:'ykt', title:'Якутия: температура -52°C в Оймяконском районе', source:'ТАСС', type:'news', time:'8ч назад', summary:'Режим повышенной готовности объявлен в трёх улусах республики.' },
+  { region:'khmao', title:'ХМАО наращивает добычу нефти с новых месторождений', source:'Правительство ХМАО', type:'gov', time:'2ч назад', summary:'Ввод в эксплуатацию трёх новых месторождений ожидается во II квартале.' },
+  { region:'sak', title:'Сахалинская область: новый СПГ-терминал принят в эксплуатацию', source:'gov.sakhalin.ru', type:'gov', time:'5ч назад', summary:'Терминал рассчитан на 5 млн тонн в год и является крупнейшим на Дальнем Востоке.' },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let selectedRegion = null;
+let selectedDistrict = null;
+let currentFilter = 'all';
+let activeRssToggles = new Set([...RSS_SOURCES.federal.map(r=>r.name), ...RSS_SOURCES.tg.map(r=>r.name)]);
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  renderDistricts();
+  renderRegionsList();
+  renderRssSidebar();
+  renderMapSVG();
+  renderNews();
+  updateStats();
+  document.getElementById('update-time').textContent = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('ru-RU');
+  document.getElementById('date-display').textContent = now.toLocaleDateString('ru-RU', {day:'numeric',month:'long'});
+}
+
+// ============================================================
+// DISTRICTS
+// ============================================================
+function renderDistricts() {
+  const container = document.getElementById('districts-list');
+  container.innerHTML = DISTRICTS.map(d => `
+    <div class="district-item ${selectedDistrict===d.id?'active':''}" onclick="selectDistrict('${d.id}')">
+      <div class="district-dot" style="background:${d.color}"></div>
+      <span class="district-name">${d.name}</span>
+      <span class="district-count">${d.regions}</span>
+    </div>
+  `).join('');
+}
+
+function selectDistrict(id) {
+  selectedDistrict = selectedDistrict === id ? null : id;
+  selectedRegion = null;
+  renderDistricts();
+  renderRegionsList();
+  renderNews();
+  document.getElementById('feed-title').textContent = selectedDistrict
+    ? DISTRICTS.find(d=>d.id===selectedDistrict)?.name + ' ФО'
+    : 'Все регионы';
+}
+
+// ============================================================
+// REGIONS
+// ============================================================
+function getFilteredRegions() {
+  let regions = REGIONS;
+  if (selectedDistrict) regions = regions.filter(r=>r.district===selectedDistrict);
+  const q = document.getElementById('region-search')?.value.toLowerCase();
+  if (q) regions = regions.filter(r=>r.name.toLowerCase().includes(q));
+  return regions;
+}
+
+function renderRegionsList() {
+  const container = document.getElementById('regions-list');
+  const regions = getFilteredRegions();
+  container.innerHTML = regions.map(r => {
+    const newsCount = MOCK_NEWS.filter(n=>n.region===r.id).length;
+    return `<div class="region-item ${selectedRegion===r.id?'selected':''}" onclick="selectRegion('${r.id}')">
+      <div class="region-item-dot"></div>
+      <span>${r.name}</span>
+      ${newsCount > 0 ? `<span class="region-news-count">${newsCount}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function selectRegion(id) {
+  selectedRegion = selectedRegion === id ? null : id;
+  selectedDistrict = null;
+  renderDistricts();
+  renderRegionsList();
+  renderNews();
+  updateMapHighlight();
+  const region = REGIONS.find(r=>r.id===id);
+  document.getElementById('feed-title').textContent = region ? region.name : 'Все регионы';
+}
+
+function filterRegions(q) {
+  renderRegionsList();
+}
+
+// ============================================================
+// NEWS RENDER
+// ============================================================
+function setFilter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderNews();
+}
+
+function renderNews() {
+  const container = document.getElementById('news-container');
+  let news = [...MOCK_NEWS];
+
+  if (selectedRegion) news = news.filter(n=>n.region===selectedRegion);
+  else if (selectedDistrict) {
+    const regionIds = REGIONS.filter(r=>r.district===selectedDistrict).map(r=>r.id);
+    news = news.filter(n=>regionIds.includes(n.region));
+  }
+
+  if (currentFilter !== 'all') news = news.filter(n=>n.type===currentFilter);
+
+  if (news.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Нет новостей по выбранным фильтрам</div>`;
+    return;
+  }
+
+  container.innerHTML = news.map(n => {
+    const region = REGIONS.find(r=>r.id===n.region);
+    const badgeClass = n.type==='tg' ? 'badge-tg' : n.type==='gov' ? 'badge-gov' : 'badge-news';
+    const badgeText = n.type==='tg' ? 'Telegram' : n.type==='gov' ? 'Гос. орган' : 'СМИ';
+    const cardClass = n.type==='tg' ? 'tg' : n.type==='gov' ? 'gov' : '';
+    return `
+    <div class="news-card ${cardClass}">
+      <div class="card-meta">
+        <span class="source-badge ${badgeClass}">${badgeText}</span>
+        <span class="card-source-name">${n.source}</span>
+        ${region ? `<span class="card-region-tag">${region.name}</span>` : ''}
+        <span class="card-time">${n.time}</span>
+      </div>
+      <div class="card-title">${n.title}</div>
+      <div class="card-summary">${n.summary}</div>
+      <a href="#" class="card-link" onclick="return false">Читать далее →</a>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// RSS SIDEBAR
+// ============================================================
+function renderRssSidebar() {
+  // Federal
+  document.getElementById('federal-rss').innerHTML = RSS_SOURCES.federal.map(s=>`
+    <div class="rss-item" onclick="window.open('${s.url}','_blank')">
+      <div class="rss-item-left">
+        <div class="rss-item-icon icon-news">📰</div>
+        <div>
+          <div class="rss-item-name">${s.name}</div>
+          <div class="rss-item-region">Федеральный</div>
+        </div>
+      </div>
+      <div class="rss-toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></div>
+    </div>`).join('');
+
+  // Gov
+  document.getElementById('gov-rss').innerHTML = RSS_SOURCES.gov.map(s=>`
+    <div class="rss-item" onclick="window.open('${s.url}','_blank')">
+      <div class="rss-item-left">
+        <div class="rss-item-icon icon-gov">🏛</div>
+        <div>
+          <div class="rss-item-name">${s.name}</div>
+          <div class="rss-item-region">Госведомство</div>
+        </div>
+      </div>
+      <div class="rss-toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></div>
+    </div>`).join('');
+
+  // Telegram
+  document.getElementById('tg-channels').innerHTML = RSS_SOURCES.tg.map(s=>`
+    <div class="rss-item" onclick="window.open('https://t.me/${s.channel.replace('@','')}','_blank')">
+      <div class="rss-item-left">
+        <div class="rss-item-icon icon-tg">✈️</div>
+        <div>
+          <div class="rss-item-name">${s.name}</div>
+          <div class="rss-item-region">${s.region} · ${s.channel}</div>
+        </div>
+      </div>
+      <div class="rss-toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></div>
+    </div>`).join('');
+
+  // TG feed (mock)
+  const tgFeedItems = [
+    { ch:'@nezygari', text:'Регионам рекомендовано усилить контроль за закупками стройматериалов в рамках нацпроектов.', time:'38 мин' },
+    { ch:'@readovkanews', text:'МЧС: в Самарской области введён режим ЧС из-за паводка на р. Сок.', time:'1ч 12 мин' },
+    { ch:'@breakingmash', text:'В Екатеринбурге задержаны подозреваемые в серии краж из торговых центров.', time:'2ч 05 мин' },
+    { ch:'@tatarstan24', text:'Президент Татарстана провёл рабочую встречу с делегацией из Беларуси по вопросам АПК.', time:'3ч 40 мин' },
+    { ch:'@yugru', text:'Сочи готовится принять международный туристический форум в мае 2026 года.', time:'4ч 15 мин' },
+  ];
+  document.getElementById('tg-feed').innerHTML = tgFeedItems.map(i=>`
+    <div class="tg-item">
+      <div class="tg-channel">${i.ch}</div>
+      <div class="tg-text">${i.text}</div>
+      <div class="tg-meta">${i.time} назад</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  document.getElementById('total-news').textContent = MOCK_NEWS.length + '+';
+  document.getElementById('active-sources').textContent =
+    RSS_SOURCES.federal.length + RSS_SOURCES.gov.length + RSS_SOURCES.tg.length;
+}
+
+// ============================================================
+// MAP SVG (Simplified schematic)
+// ============================================================
+const MAP_REGIONS_DATA = [
+  // Schematic representation — simplified rectangles/polygons for key regions
+  // Russia SVG path (simplified schematic blocks)
+  { id:'ykt',   x:600, y:50,  w:200, h:160, label:'Якутия' },
+  { id:'msk',   x:230, y:230, w:50,  h:35,  label:'МСК' },
+  { id:'spb',   x:190, y:195, w:40,  h:30,  label:'СПб' },
+  { id:'nnv',   x:310, y:235, w:55,  h:35,  label:'НО' },
+  { id:'tat',   x:370, y:240, w:55,  h:40,  label:'Тат' },
+  { id:'ekb',   x:450, y:215, w:60,  h:50,  label:'Свердл' },
+  { id:'khmao', x:505, y:150, w:80,  h:60,  label:'ХМАО' },
+  { id:'ynao',  x:470, y:100, w:90,  h:55,  label:'ЯНАО' },
+  { id:'nsk',   x:545, y:270, w:70,  h:50,  label:'НСО' },
+  { id:'krk',   x:580, y:210, w:100, h:65,  label:'Красн' },
+  { id:'irk',   x:660, y:250, w:80,  h:70,  label:'Иркутск' },
+  { id:'bur',   x:720, y:310, w:60,  h:50,  label:'Бурятия' },
+  { id:'zab',   x:760, y:270, w:60,  h:55,  label:'Забайкал' },
+  { id:'khb',   x:820, y:270, w:55,  h:60,  label:'Хабаровск' },
+  { id:'pri',   x:830, y:340, w:55,  h:55,  label:'Примор' },
+  { id:'sak',   x:890, y:270, w:30,  h:80,  label:'Сахалин' },
+  { id:'kam',   x:860, y:190, w:45,  h:60,  label:'Камч' },
+  { id:'amr',   x:775, y:330, w:55,  h:45,  label:'Амурск' },
+  { id:'mag',   x:800, y:180, w:65,  h:60,  label:'Магадан' },
+  { id:'chu2',  x:830, y:100, w:100, h:90,  label:'Чукотка' },
+  { id:'eao',   x:820, y:315, w:35,  h:30,  label:'ЕАО' },
+  { id:'krd',   x:220, y:310, w:60,  h:45,  label:'Краснодар' },
+  { id:'ros',   x:270, y:300, w:55,  h:40,  label:'Ростов' },
+  { id:'vol',   x:320, y:290, w:55,  h:40,  label:'Волгогр' },
+  { id:'ast',   x:350, y:325, w:45,  h:35,  label:'Астрах' },
+  { id:'dag',   x:305, y:350, w:40,  h:35,  label:'Дагестан' },
+  { id:'stv',   x:270, y:340, w:45,  h:35,  label:'Ставроп' },
+  { id:'che',   x:310, y:345, w:30,  h:25,  label:'Чечня' },
+  { id:'sam',   x:395, y:265, w:50,  h:40,  label:'Самара' },
+  { id:'sar',   x:360, y:270, w:45,  h:40,  label:'Саратов' },
+  { id:'bsh',   x:430, y:250, w:50,  h:40,  label:'Башкорт' },
+  { id:'per',   x:435, y:205, w:55,  h:50,  label:'Пермь' },
+  { id:'kir',   x:370, y:195, w:60,  h:50,  label:'Киров' },
+  { id:'ore',   x:410, y:270, w:45,  h:35,  label:'Оренбург' },
+  { id:'tum',   x:465, y:260, w:55,  h:45,  label:'Тюмень' },
+  { id:'omsk',  x:510, y:285, w:50,  h:45,  label:'Омск' },
+  { id:'keme',  x:555, y:290, w:45,  h:40,  label:'Кемерово' },
+  { id:'tom',   x:550, y:250, w:40,  h:35,  label:'Томск' },
+  { id:'alt',   x:525, y:320, w:55,  h:40,  label:'Алт. кр.' },
+  { id:'altR',  x:555, y:340, w:35,  h:30,  label:'Алтай р.' },
+  { id:'tuv',   x:600, y:335, w:50,  h:40,  label:'Тыва' },
+  { id:'kha',   x:625, y:295, w:40,  h:35,  label:'Хакасия' },
+  { id:'ykt',   x:630, y:60,  w:200, h:170, label:'Якутия' },
+  { id:'arc',   x:270, y:125, w:110, h:90,  label:'Архангел' },
+  { id:'mur',   x:225, y:95,  w:80,  h:80,  label:'Мурманск' },
+  { id:'kar',   x:200, y:155, w:60,  h:65,  label:'Карелия' },
+  { id:'kom',   x:360, y:120, w:120, h:100, label:'Коми' },
+  { id:'nen',   x:430, y:95,  w:75,  h:60,  label:'НАО' },
+  { id:'kal',   x:150, y:245, w:35,  h:25,  label:'Калинингр' },
+  { id:'len',   x:210, y:180, w:50,  h:45,  label:'Лен. обл.' },
+  { id:'vla',   x:265, y:225, w:45,  h:35,  label:'Владимир' },
+  { id:'mo',    x:250, y:220, w:55,  h:40,  label:'Моск. обл.' },
+  { id:'vor',   x:285, y:265, w:50,  h:35,  label:'Воронеж' },
+  { id:'bel',   x:255, y:270, w:40,  h:30,  label:'Белгород' },
+  { id:'kur',   x:245, y:265, w:30,  h:30,  label:'Курск' },
+  { id:'brz',   x:215, y:255, w:35,  h:30,  label:'Брянск' },
+  { id:'cry',   x:250, y:340, w:45,  h:30,  label:'Крым' },
+];
+
+function getDistrictColor(regionId) {
+  const region = REGIONS.find(r=>r.id===regionId);
+  if (!region) return '#1e2d45';
+  const district = DISTRICTS.find(d=>d.id===region.district);
+  return district ? district.color : '#1e2d45';
+}
+
+function renderMapSVG() {
+  const g = document.getElementById('map-regions');
+  const hasNewsSet = new Set(MOCK_NEWS.map(n=>n.region));
+
+  g.innerHTML = MAP_REGIONS_DATA.map(r => {
+    const hasNews = hasNewsSet.has(r.id);
+    const isSelected = selectedRegion === r.id;
+    const distColor = getDistrictColor(r.id);
+    const fillColor = isSelected ? '#1d4ed8' : hasNews ? '#1a3558' : '#1e2d45';
+    const strokeColor = isSelected ? '#60a5fa' : '#2d3f5a';
+    return `
+    <g class="map-region-group" data-id="${r.id}">
+      <rect
+        x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"
+        rx="3"
+        fill="${fillColor}"
+        stroke="${strokeColor}"
+        stroke-width="${isSelected?1.5:0.5}"
+        class="map-region ${isSelected?'selected':''} ${hasNews?'has-news':''}"
+        onmouseenter="showTooltip(event,'${r.id}','${r.label}')"
+        onmouseleave="hideTooltip()"
+        onclick="selectRegion('${r.id}')"
+      />
+      ${r.w > 45 ? `<text x="${r.x+r.w/2}" y="${r.y+r.h/2+4}" text-anchor="middle" font-size="${r.w>80?9:8}" fill="${isSelected?'#93c5fd':'#64748b'}" pointer-events="none" font-family="Golos Text,sans-serif">${r.label}</text>` : ''}
+    </g>`;
+  }).join('');
+}
+
+function updateMapHighlight() {
+  renderMapSVG();
+}
+
+function showTooltip(e, id, label) {
+  const tt = document.getElementById('map-tooltip');
+  const count = MOCK_NEWS.filter(n=>n.region===id).length;
+  document.getElementById('tt-name').textContent = REGIONS.find(r=>r.id===id)?.name || label;
+  document.getElementById('tt-count').textContent = count > 0 ? `${count} новостей за 24ч` : 'Нет новостей';
+  const rect = e.target.closest('svg').getBoundingClientRect();
+  tt.style.left = (e.clientX - rect.left + 10) + 'px';
+  tt.style.top = (e.clientY - rect.top - 10) + 'px';
+  tt.style.display = 'block';
+}
+function hideTooltip() {
+  document.getElementById('map-tooltip').style.display = 'none';
+}
+
+function setMapMode(mode) {
+  document.querySelectorAll('.map-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
